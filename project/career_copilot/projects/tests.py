@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from careers.models import CareerRole, CareerRoleSkillRequirement, UserCareerGoal
 from skills.models import Skill, SkillEvidence, UserSkillProficiency
@@ -72,3 +73,61 @@ class ProjectTests(TestCase):
         self.assertEqual(len(recommended), 1)
         self.assertEqual(recommended[0]['project'].title, "Build a CRM")
         self.assertEqual(recommended[0]['relevance'], "high")
+
+class ProjectViewIntegrationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="demo", email="demo@test.com", password="password123")
+        self.other_user = User.objects.create_user(username="other", email="other@test.com", password="password123")
+        
+        self.project_template = ProjectTemplate.objects.create(
+            title="AI Chatbot",
+            description="Build a chatbot.",
+            difficulty="intermediate"
+        )
+        
+    def test_project_list_view(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('projects:project_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "AI Chatbot")
+        
+    def test_project_start_view(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('projects:project_detail', kwargs={'project_id': self.project_template.id}),
+            {'action': 'start'}
+        )
+        self.assertRedirects(response, reverse('projects:project_detail', kwargs={'project_id': self.project_template.id}))
+        
+        # Verify it started
+        up = UserProject.objects.get(user=self.user, project_template=self.project_template)
+        self.assertEqual(up.status, 'in_progress')
+        
+    def test_project_complete_view_and_idor(self):
+        # User starts it
+        up = ProjectService.start_project(self.user, self.project_template.id)
+        
+        # Other user tries to complete it via view - they shouldn't be able to because the view 
+        # fetches UserProject for request.user
+        self.client.force_login(self.other_user)
+        response = self.client.post(
+            reverse('projects:project_detail', kwargs={'project_id': self.project_template.id}),
+            {'action': 'complete'}
+        )
+        # Should not redirect, but render page with 200 and NOT complete user 1's project
+        self.assertEqual(response.status_code, 200)
+        
+        up.refresh_from_db()
+        self.assertEqual(up.status, 'in_progress') # Unchanged
+        
+        # Now user completes it
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('projects:project_detail', kwargs={'project_id': self.project_template.id}),
+            {'action': 'complete'}
+        )
+        self.assertRedirects(response, reverse('projects:project_detail', kwargs={'project_id': self.project_template.id}))
+        
+        up.refresh_from_db()
+        self.assertEqual(up.status, 'completed')
