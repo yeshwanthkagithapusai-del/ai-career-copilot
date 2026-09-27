@@ -11,158 +11,200 @@
 
 <!-- Dashboard Grid -->
 <div class="dashboard-grid">
-    <!-- Resume Performance -->
+    <!-- Career Target & Readiness -->
     <div class="stat-card">
-        <div class="stat-icon purple"><i class="fas fa-file-alt"></i></div>
-        {% if latest_resume %}
-            <div class="stat-value">{{ latest_resume.ats_score }}<span style="font-size: 20px; color: var(--text-muted);">/100</span></div>
-            <div class="stat-label">Latest ATS Score</div>
-            {% if resume_diff is not None %}
-                <div class="stat-change {% if resume_diff > 0 %}positive{% elif resume_diff < 0 %}negative{% else %}neutral{% endif %}">
-                    <i class="fas fa-arrow-{% if resume_diff > 0 %}up{% elif resume_diff < 0 %}down{% else %}right{% endif %}"></i>
-                    {% if resume_diff > 0 %}+{% endif %}{{ resume_diff }} from last analysis
-                </div>
+        <div class="stat-icon purple"><i class="fas fa-bullseye"></i></div>
+        {% if has_target_career %}
+            <div class="stat-value">{{ readiness_score|default:"--" }}<span style="font-size: 20px; color: var(--text-muted);">%</span></div>
+            <div class="stat-label">Career Readiness</div>
+            <div class="mt-2" style="font-size: 13px; font-weight: 500;">Target Role: {{ target_role.name }}</div>
+            {% if not readiness_score %}
+            <div class="stat-change neutral mt-2" style="font-size: 11px;">
+                <i class="fas fa-info-circle"></i> Complete more activities to calculate readiness.
+            </div>
             {% endif %}
             <div class="mt-3-custom">
-                <a href="{% url 'resume_analyzer:ats_report' latest_resume.id %}" class="btn-secondary-custom" style="font-size: 13px; padding: 8px 16px;">
-                    View Report <i class="fas fa-arrow-right"></i>
+                <a href="{% url 'roadmaps:course_guidance' %}" class="btn-secondary-custom" style="font-size: 13px; padding: 8px 16px;">
+                    Change Target <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         {% else %}
             <div class="empty-state" style="padding: 20px 0;">
-                <div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 22px;"><i class="fas fa-file-upload"></i></div>
-                <div class="empty-state-title" style="font-size: 16px;">No resume analyzed yet</div>
-                <div class="empty-state-text" style="font-size: 13px;">Upload your resume to generate your ATS score.</div>
-                <a href="{% url 'resume_analyzer:resume_analyzer' %}" class="btn-primary-custom" style="font-size: 13px; padding: 8px 20px;">
-                    <i class="fas fa-upload"></i> Upload Resume
+                <div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 22px;"><i class="fas fa-bullseye"></i></div>
+                <div class="empty-state-title" style="font-size: 16px;">Set your target career</div>
+                <div class="empty-state-text" style="font-size: 13px;">To unlock personalized career intelligence, you need to define your goal.</div>
+                <a href="{% url 'roadmaps:course_guidance' %}" class="btn-primary-custom" style="font-size: 13px; padding: 8px 20px;">
+                    <i class="fas fa-bullseye"></i> Set Target Role
                 </a>
             </div>
+        {% endif %}
+    </div>
+
+    <!-- Next Best Action -->
+    <div class="stat-card" style="border: 2px solid var(--primary-color);">
+        <div class="stat-icon blue"><i class="fas fa-compass"></i></div>
+        <div class="stat-value" style="font-size: 20px; margin-bottom: 5px;">Next Best Action</div>
+        <div class="stat-label" style="color: var(--text-color); font-weight: 600; font-size: 16px;">{{ next_action.title }}</div>
+        
+        <div class="mt-2" style="font-size: 13px; color: var(--text-muted);">
+            {{ next_action.reason }}
+        </div>
+        
+        <div class="mt-3-custom">
+            <a href="{% url next_action.url_name %}" class="btn-primary-custom" style="font-size: 13px; padding: 8px 16px;">
+                Take Action <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Evidence Summary -->
+    <div class="stat-card">
+        <div class="stat-icon cyan"><i class="fas fa-database"></i></div>
+        <div class="stat-value">Career Evidence</div>
+        <div class="stat-label">Verified Skill Sources</div>
+        
+        {% if evidence_counts %}
+        <div class="d-flex flex-column gap-2 mt-3">
+            {% for source, count in evidence_counts.items %}
+            <div class="d-flex justify-content-between align-items-center" style="font-size: 13px;">
+                <span style="text-transform: capitalize;"><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 5px;"></i> {{ source }}</span>
+                <span class="skill-tag" style="font-size: 12px;">{{ count }} skills</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding: 20px 0;">
+            <div class="empty-state-text" style="font-size: 13px;">Complete your resume analysis, assessment or interview to start building your career intelligence.</div>
+        </div>
         {% endif %}
     </div>
     
-    <!-- Interview Performance -->
+    <!-- Recent Activity -->
     <div class="stat-card">
-        <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
-        {% if latest_interview %}
-            <div class="stat-value">{{ latest_interview.overall_score }}<span style="font-size: 20px; color: var(--text-muted);">/100</span></div>
-            <div class="stat-label">Latest Interview Score</div>
-            <div class="d-flex gap-2 mt-2 flex-wrap">
-                <span class="skill-tag" style="font-size: 12px;">Tech: {{ latest_interview.technical_score }}</span>
-                <span class="skill-tag" style="font-size: 12px;">Comm: {{ latest_interview.communication_score }}</span>
+        <div class="stat-icon green"><i class="fas fa-history"></i></div>
+        <div class="stat-value">Recent Activity</div>
+        
+        {% if activities %}
+        <div class="d-flex flex-column gap-2 mt-3">
+            {% for activity in activities %}
+            <div style="font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                <div style="font-weight: 600;">{{ activity.type }}</div>
+                <div style="color: var(--text-muted); font-size: 11px;">{{ activity.detail }}</div>
             </div>
-            {% if interview_diff %}
-                <div class="stat-change {% if interview_diff.overall > 0 %}positive{% elif interview_diff.overall < 0 %}negative{% else %}neutral{% endif %} mt-2">
-                    <i class="fas fa-arrow-{% if interview_diff.overall > 0 %}up{% elif interview_diff.overall < 0 %}down{% else %}right{% endif %}"></i>
-                    {% if interview_diff.overall > 0 %}+{% endif %}{{ interview_diff.overall }} from last interview
-                </div>
-            {% endif %}
-            <div class="mt-3-custom">
-                <a href="{% url 'interviews:interview_report' latest_interview.id %}" class="btn-secondary-custom" style="font-size: 13px; padding: 8px 16px;">
-                    View Report <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <div class="empty-state" style="padding: 20px 0;">
-                <div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 22px;"><i class="fas fa-microphone"></i></div>
-                <div class="empty-state-title" style="font-size: 16px;">No interviews yet</div>
-                <div class="empty-state-text" style="font-size: 13px;">Complete your first mock interview to track performance.</div>
-                <a href="{% url 'interviews:interview_setup' %}" class="btn-primary-custom" style="font-size: 13px; padding: 8px 20px;">
-                    <i class="fas fa-play"></i> Start Interview
-                </a>
-            </div>
+        <div class="empty-state" style="padding: 20px 0;">
+            <div class="empty-state-text" style="font-size: 13px;">No recent career activities. Start training or testing today!</div>
+        </div>
         {% endif %}
+    </div>
+</div>
+
+<!-- Skill Gap Overview -->
+<div class="glass-card p-4 mb-4-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="section-title"><i class="fas fa-chart-pie text-secondary-custom"></i> Skill Gap Overview</h3>
     </div>
     
-    <!-- Test Performance -->
-    <div class="stat-card">
-        <div class="stat-icon cyan"><i class="fas fa-laptop-code"></i></div>
-        {% if latest_test %}
-            <div class="stat-value">{{ latest_test.score }}<span style="font-size: 20px; color: var(--text-muted);">%</span></div>
-            <div class="stat-label">Latest Test Score ({{ latest_test.skill }})</div>
-            <div class="d-flex gap-2 mt-2">
-                <span class="skill-tag" style="font-size: 12px;">Tests: {{ tests_count }}</span>
-                <span class="skill-tag" style="font-size: 12px;">Accuracy: {{ latest_test.accuracy }}%</span>
+    {% if has_target_career %}
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <h4 style="font-size: 15px; color: #4ade80;"><i class="fas fa-star"></i> Strong</h4>
+                {% if skill_gaps.STRONG %}
+                    {% for gap in skill_gaps.STRONG %}
+                        <div class="suggestion-card" style="padding: 10px; margin-bottom: 10px;">
+                            <div style="font-weight: 600; font-size: 13px;">{{ gap.skill_name }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Proficiency: {{ gap.current_score }} / {{ gap.priority }} priority</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="font-size: 12px; color: var(--text-muted);">None yet. Keep practicing!</div>
+                {% endif %}
             </div>
-            {% if test_diff is not None %}
-                <div class="stat-change {% if test_diff > 0 %}positive{% elif test_diff < 0 %}negative{% else %}neutral{% endif %} mt-2">
-                    <i class="fas fa-arrow-{% if test_diff > 0 %}up{% elif test_diff < 0 %}down{% else %}right{% endif %}"></i>
-                    {% if test_diff > 0 %}+{% endif %}{{ test_diff }} from last test
-                </div>
-            {% endif %}
-            <div class="mt-3-custom">
-                <a href="{% url 'assessments:test_analysis' latest_test.id %}" class="btn-secondary-custom" style="font-size: 13px; padding: 8px 16px;">
-                    View Analysis <i class="fas fa-arrow-right"></i>
-                </a>
+            
+            <div class="col-md-3 mb-3">
+                <h4 style="font-size: 15px; color: #60a5fa;"><i class="fas fa-arrow-trend-up"></i> Developing</h4>
+                {% if skill_gaps.DEVELOPING %}
+                    {% for gap in skill_gaps.DEVELOPING %}
+                        <div class="suggestion-card" style="padding: 10px; margin-bottom: 10px;">
+                            <div style="font-weight: 600; font-size: 13px;">{{ gap.skill_name }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Proficiency: {{ gap.current_score }} / {{ gap.priority }} priority</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="font-size: 12px; color: var(--text-muted);">None currently developing.</div>
+                {% endif %}
             </div>
-        {% else %}
-            <div class="empty-state" style="padding: 20px 0;">
-                <div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 22px;"><i class="fas fa-clipboard"></i></div>
-                <div class="empty-state-title" style="font-size: 16px;">No tests taken yet</div>
-                <div class="empty-state-text" style="font-size: 13px;">Complete your first assessment to start tracking progress.</div>
-                <a href="{% url 'assessments:test_setup' %}" class="btn-primary-custom" style="font-size: 13px; padding: 8px 20px;">
-                    <i class="fas fa-play"></i> Take a Test
-                </a>
+            
+            <div class="col-md-3 mb-3">
+                <h4 style="font-size: 15px; color: #facc15;"><i class="fas fa-exclamation-triangle"></i> Needs Improvement</h4>
+                {% if skill_gaps.NEEDS_IMPROVEMENT %}
+                    {% for gap in skill_gaps.NEEDS_IMPROVEMENT %}
+                        <div class="suggestion-card" style="padding: 10px; margin-bottom: 10px; border-left: 3px solid #facc15;">
+                            <div style="font-weight: 600; font-size: 13px;">{{ gap.skill_name }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Proficiency: {{ gap.current_score }} / {{ gap.priority }} priority</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="font-size: 12px; color: var(--text-muted);">All current skills meet minimums!</div>
+                {% endif %}
             </div>
-        {% endif %}
-    </div>
-    
-    <!-- Skill Development -->
-    <div class="stat-card">
-        <div class="stat-icon green"><i class="fas fa-brain"></i></div>
-        {% if skills %}
-            <div class="stat-value">{{ skills|length }}</div>
-            <div class="stat-label">Skills Tracked</div>
-            <div class="d-flex flex-wrap gap-1 mt-2">
-                {% for skill in skills|slice:":5" %}
-                    <span class="skill-tag" style="font-size: 12px;">{{ skill.skill_name }} ({{ skill.skill_score }})</span>
-                {% endfor %}
+            
+            <div class="col-md-3 mb-3">
+                <h4 style="font-size: 15px; color: #f87171;"><i class="fas fa-times-circle"></i> Missing</h4>
+                {% if skill_gaps.MISSING %}
+                    {% for gap in skill_gaps.MISSING %}
+                        <div class="suggestion-card" style="padding: 10px; margin-bottom: 10px; border-left: 3px solid #f87171;">
+                            <div style="font-weight: 600; font-size: 13px;">{{ gap.skill_name }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Required ({{ gap.priority }})</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="font-size: 12px; color: var(--text-muted);">No missing requirements!</div>
+                {% endif %}
             </div>
-            <div class="mt-3-custom">
-                <a href="{% url 'roadmaps:skills' %}" class="btn-secondary-custom" style="font-size: 13px; padding: 8px 16px;">
-                    View All Skills <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        {% else %}
-            <div class="empty-state" style="padding: 20px 0;">
-                <div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 22px;"><i class="fas fa-lightbulb"></i></div>
-                <div class="empty-state-title" style="font-size: 16px;">No skills detected yet</div>
-                <div class="empty-state-text" style="font-size: 13px;">Upload a resume or take a test to detect your skills.</div>
-                <a href="{% url 'roadmaps:skills' %}" class="btn-primary-custom" style="font-size: 13px; padding: 8px 20px;">
-                    <i class="fas fa-plus"></i> Add Skills
-                </a>
-            </div>
-        {% endif %}
-    </div>
+        </div>
+    {% else %}
+        <div class="empty-state mt-3">
+            <div class="empty-state-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="empty-state-title">No target role set</div>
+            <div class="empty-state-text">Set a target career to see your skill gaps.</div>
+        </div>
+    {% endif %}
 </div>
 
 <!-- Career Progress Chart -->
 <div class="glass-card p-4 mb-4-custom">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="section-title"><i class="fas fa-chart-line text-secondary-custom"></i> Career Progress Overview</h3>
+        <h3 class="section-title"><i class="fas fa-chart-line text-secondary-custom"></i> Career Progress Analytics</h3>
         <a href="{% url 'career_progress:career_progress' %}" class="btn-secondary-custom" style="font-size: 13px; padding: 8px 16px;">Full Analytics</a>
     </div>
-    <div class="chart-container">
-        <canvas id="progressChart"></canvas>
-    </div>
-    {% if not latest_resume and not latest_interview and not latest_test %}
-        <div class="empty-state mt-3">
-            <div class="empty-state-icon"><i class="fas fa-chart-area"></i></div>
-            <div class="empty-state-title">No progress data yet</div>
-            <div class="empty-state-text">Complete activities like resume analysis, interviews, or tests to see your progress graph.</div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                <canvas id="progressChart"></canvas>
+            </div>
         </div>
-    {% endif %}
+        <div class="col-md-4">
+            <div class="p-3" style="background: rgba(0,0,0,0.2); border-radius: 8px; height: 100%;">
+                <h4 style="font-size: 15px; margin-bottom: 15px;">Progress Insights</h4>
+                <p style="font-size: 13px; color: var(--text-muted);">
+                    Your overall readiness is calculated continuously as you collect verified evidence from your activities.
+                </p>
+                <ul style="font-size: 13px; color: var(--text-muted); padding-left: 15px;">
+                    <li>Completing roadmap phases increases training evidence.</li>
+                    <li>Technical assessments provide high-confidence evidence.</li>
+                    <li>Mock interviews validate communication and technical depth.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- AI Suggestions -->
-<div class="glass-card p-4">
-    <h3 class="section-title"><i class="fas fa-robot gradient-text"></i> AI Suggestions</h3>
-    {% for suggestion in ai_suggestions %}
-        <div class="suggestion-card">
-            <div class="suggestion-icon"><i class="fas fa-lightbulb"></i></div>
-            <div class="suggestion-text">{{ suggestion }}</div>
-        </div>
-    {% endfor %}
-</div>
+{{ skill_gaps_json|json_script:"skillGapsData" }}
+
 
 {% endblock %}
 

@@ -34,6 +34,7 @@ class CareerRoleSkillRequirement(models.Model):
     role = models.ForeignKey(CareerRole, on_delete=models.CASCADE, related_name='skill_requirements')
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name='role_requirements')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    required_proficiency = models.IntegerField(null=True, blank=True, help_text="Required proficiency score (0-100)")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
