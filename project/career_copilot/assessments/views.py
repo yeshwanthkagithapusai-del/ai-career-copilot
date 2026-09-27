@@ -162,17 +162,21 @@ def submit_test(request, test_id):
         previous_score=previous_score,
     )
     
-    # Update skills
-    from roadmaps.models import Skill
-    skill_obj, created = Skill.objects.get_or_create(
-        user=request.user,
-        skill_name=test.skill,
-        defaults={'skill_score': result['score'], 'source': 'test'}
-    )
-    if not created:
-        skill_obj.skill_score = result['score']
-        skill_obj.source = 'test'
-        skill_obj.save()
+    # Update canonical skills from assessment
+    try:
+        from career_intelligence.services import SkillEvidenceService
+        SkillEvidenceService.record_skill_evidence(
+            user=request.user,
+            skill_name=test.skill,
+            source_type='assessment',
+            source_reference=f"test:{test.id}",
+            description=f"Completed a {test.difficulty} level assessment.",
+            score=result['score'],
+            confidence=90  # Assessments are high confidence signals
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger('assessments').warning(f"Skill evidence extraction failed: {e}")
     
     return JsonResponse({
         'success': True,

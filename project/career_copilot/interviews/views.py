@@ -241,6 +241,33 @@ def complete_interview(request, interview_id):
             score=report['communication_score'],
             previous_score=previous_interviews.first().communication_score if previous_interviews.exists() else 0,
         )
+        
+        # Record canonical skill evidence from interview
+        try:
+            from career_intelligence.services import SkillEvidenceService
+            # Target role acts as the primary domain skill tested
+            SkillEvidenceService.record_skill_evidence(
+                user=request.user,
+                skill_name=interview.target_role,
+                source_type='interview',
+                source_reference=f"interview:{interview.id}",
+                description=f"AI Mock Interview for {interview.target_role} role.",
+                score=report['technical_score'],
+                confidence=80
+            )
+            # Record communication as a soft skill
+            SkillEvidenceService.record_skill_evidence(
+                user=request.user,
+                skill_name="Communication",
+                source_type='interview',
+                source_reference=f"interview:{interview.id}_comm",
+                description="Communication evaluation during mock interview.",
+                score=report['communication_score'],
+                confidence=80
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger('interviews').warning(f"Skill evidence extraction failed: {e}")
     
     messages.success(request, f"Interview completed! Your overall score is {report['overall_score']}/100.")
     return redirect('interviews:interview_report', interview_id=interview.id)

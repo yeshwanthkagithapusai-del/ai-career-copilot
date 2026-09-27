@@ -211,6 +211,21 @@ def skills_view(request):
                 skill_name=skill_name,
                 defaults={'skill_score': 0, 'source': 'manual'}
             )
+            
+            # Record in new canonical evidence system
+            try:
+                from career_intelligence.services import SkillEvidenceService
+                SkillEvidenceService.record_skill_evidence(
+                    user=request.user,
+                    skill_name=skill_name,
+                    source_type='manual',
+                    description="User manually claimed this skill.",
+                    confidence=50
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger('roadmaps').warning(f"Skill evidence extraction failed: {e}")
+                
             if created:
                 messages.success(request, f"Skill '{skill_name}' added.")
             else:
@@ -393,12 +408,21 @@ def submit_phase_training(request, pt_id):
     roadmap.save()
 
 
-    # Update or create Skill score for this phase
-    Skill.objects.update_or_create(
-        user=request.user,
-        skill_name=pt.phase_name,
-        defaults={'skill_score': score, 'source': 'roadmap'},
-    )
+    # Update canonical skills from roadmap phase training
+    try:
+        from career_intelligence.services import SkillEvidenceService
+        SkillEvidenceService.record_skill_evidence(
+            user=request.user,
+            skill_name=pt.phase_name,
+            source_type='roadmap',
+            source_reference=f"roadmap_training:{pt.id}",
+            description=f"Roadmap phase training completed: {pt.phase_name}",
+            score=score,
+            confidence=80
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger('roadmaps').warning(f"Skill evidence extraction failed: {e}")
 
     return JsonResponse({
         'success': True,

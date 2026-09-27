@@ -83,11 +83,11 @@ def upload_resume(request):
         
         # Extract text
         service = ResumeAIService()
-        file_path = resume.resume_file.path
+        file_path = resume.resume_file.path if hasattr(resume.resume_file, 'path') else ''
         extracted_text = service.extract_text(file_path, ext)
         resume.extracted_text = extracted_text
         
-        if not extracted_text or len(extracted_text.strip()) < 50:
+        if not extracted_text or len(str(extracted_text).strip()) < 50:
             resume.delete()
             messages.error(request, "We couldn't extract text from your resume. Please ensure your file is not a scanned image and try again.")
             return redirect('resume_analyzer:resume_analyzer')
@@ -117,18 +117,27 @@ def upload_resume(request):
             previous_score=previous_score,
         )
         
-        # Update skills from resume
-        from roadmaps.models import Skill
-        skills_found = analysis.get('skills_found', [])
-        for skill_name in skills_found:
-            skill, created = Skill.objects.get_or_create(
-                user=request.user,
-                skill_name=skill_name,
-                defaults={'skill_score': 50, 'source': 'resume'}
-            )
-            if not created and skill.skill_score < 50:
-                skill.skill_score = 50
-                skill.save()
+        # Update canonical skills from resume
+        try:
+            from career_intelligence.services import SkillEvidenceService
+            skills_found = analysis.get('skills_found', [])
+            for skill_item in skills_found:
+                skill_name = skill_item.get('name') if isinstance(skill_item, dict) else skill_item
+                if not skill_name:
+                    continue
+                SkillEvidenceService.record_skill_evidence(
+                    user=request.user,
+                    skill_name=skill_name,
+                    source_type='resume',
+                    source_reference=f"resume:{resume.id}",
+                    description="Extracted from resume via ATS analysis.",
+                    score=50,
+                    confidence=70
+                )
+        except Exception as e:
+            # Do not block the primary workflow if evidence generation fails
+            import logging
+            logging.getLogger('resume_analyzer').warning(f"Skill evidence extraction failed: {e}")
         
         messages.success(request, f"Resume analyzed! Your ATS score is {analysis['overall_score']}/100.")
         return redirect('resume_analyzer:ats_report', resume_id=resume.id)
