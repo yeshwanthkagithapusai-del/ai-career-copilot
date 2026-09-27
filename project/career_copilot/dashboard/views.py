@@ -3,6 +3,7 @@ Views for dashboard app.
 """
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from accounts.models import UserProfile, Notification
 from resume_analyzer.models import Resume
 from interviews.models import InterviewSession
@@ -35,3 +36,10 @@ def dashboard(request):
     }
     
     return render(request, 'dashboard/dashboard.html', context)
+
+def health_check(request):
+    """
+    Simple unauthenticated health check endpoint for zero-downtime 
+    deployments on platforms like Render or AWS ALBs.
+    """
+    return JsonResponse({'status': 'ok'})

@@ -12,7 +12,10 @@ def redirect_to_landing(request, path=None):
     return HttpResponseRedirect('/')
 
 
+from dashboard.views import health_check
+
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('', include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),
