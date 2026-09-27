@@ -46,9 +46,23 @@ def start_interview(request):
         return redirect('interviews:interview_setup')
     
     # Get user skills for personalization
-    from roadmaps.models import Skill
-    user_skills = list(Skill.objects.filter(user=request.user).values_list('skill_name', flat=True))
+    # Get user skills for personalization
+    from roadmaps.models import Skill as RoadmapSkill
+    user_skills = list(RoadmapSkill.objects.filter(user=request.user).values_list('skill_name', flat=True))
     
+    # Career Context for Intelligence 2.0
+    from careers.models import UserCareerGoal
+    from career_intelligence.gap_analysis import calculate_skill_gaps
+    career_context = ""
+    goal = UserCareerGoal.objects.filter(user=request.user).select_related('target_role').first()
+    if goal and goal.target_role:
+        target_role = goal.target_role.name # Override target role with canonical one if available
+        gaps_data = calculate_skill_gaps(request.user, goal.target_role)
+        if gaps_data['status'] == 'SUCCESS':
+            missing = [g['skill_name'] for g in gaps_data['gaps']['MISSING'][:5]]
+            if missing:
+                career_context = f"The user needs to improve or demonstrate these missing skills: {', '.join(missing)}."
+
     # Fetch recent questions served to this user to avoid repeats
     recent_qs = list(
         InterviewAnswer.objects.filter(
@@ -58,7 +72,7 @@ def start_interview(request):
 
     # Generate questions
     service = InterviewAIService()
-    questions = service.generate_questions(target_role, interview_type, difficulty, num_questions, user_skills, recent_questions=recent_qs)
+    questions = service.generate_questions(target_role, interview_type, difficulty, num_questions, user_skills, recent_questions=recent_qs, career_context=career_context)
     
     if not questions:
         messages.error(request, "We couldn't generate interview questions. Please try again.")
@@ -73,11 +87,23 @@ def start_interview(request):
         num_questions=num_questions,
     )
     
-    # Store questions as answers (will be filled as user responds)
+    # Store questions and identify primary skill
+    from .services import InterviewIntelligenceService
+    intel_service = InterviewIntelligenceService()
+    
     for q in questions:
+        # Determine the primary skill assessed by this question
+        assessed_skill = ""
+        if interview_type in ['technical', 'mixed']:
+            try:
+                assessed_skill = intel_service.identify_question_skill(q, target_role, goal)
+            except Exception:
+                pass
+
         InterviewAnswer.objects.create(
             interview=interview,
             question=q,
+            assessed_skill=assessed_skill
         )
     
     return redirect('interviews:interview_room', interview_id=interview.id)
@@ -242,29 +268,11 @@ def complete_interview(request, interview_id):
             previous_score=previous_interviews.first().communication_score if previous_interviews.exists() else 0,
         )
         
-        # Record canonical skill evidence from interview
+        # Record canonical skill evidence from interview via InterviewIntelligenceService
         try:
-            from career_intelligence.services import SkillEvidenceService
-            # Target role acts as the primary domain skill tested
-            SkillEvidenceService.record_skill_evidence(
-                user=request.user,
-                skill_name=interview.target_role,
-                source_type='interview',
-                source_reference=f"interview:{interview.id}",
-                description=f"AI Mock Interview for {interview.target_role} role.",
-                score=report['technical_score'],
-                confidence=80
-            )
-            # Record communication as a soft skill
-            SkillEvidenceService.record_skill_evidence(
-                user=request.user,
-                skill_name="Communication",
-                source_type='interview',
-                source_reference=f"interview:{interview.id}_comm",
-                description="Communication evaluation during mock interview.",
-                score=report['communication_score'],
-                confidence=80
-            )
+            from .services import InterviewIntelligenceService
+            intel_service = InterviewIntelligenceService()
+            intel_service.process_interview_evidence(request.user, interview, answers)
         except Exception as e:
             import logging
             logging.getLogger('interviews').warning(f"Skill evidence extraction failed: {e}")
@@ -295,12 +303,46 @@ def interview_report(request, interview_id):
             'confidence': interview.confidence_score - previous_interview.confidence_score,
         }
     
+    # Interview Intelligence 2.0
+    from .services import InterviewIntelligenceService
+    from careers.models import UserCareerGoal
+    from career_intelligence.gap_analysis import calculate_skill_gaps
+    
+    intel_service = InterviewIntelligenceService()
+    goal = UserCareerGoal.objects.filter(user=request.user).select_related('target_role').first()
+    gaps_data = calculate_skill_gaps(request.user, goal.target_role) if goal and goal.target_role else None
+    
+    next_practice = intel_service.generate_next_practice_recommendation(interview, gaps_data)
+    
+    # Analyze assessed skills and their performances
+    skills_demonstrated = []
+    skills_needing_improvement = []
+    for ans in answers:
+        if getattr(ans, 'assessed_skill', '') and ans.assessed_skill.lower() != 'none':
+            if ans.technical_score >= 70:
+                if ans.assessed_skill not in skills_demonstrated:
+                    skills_demonstrated.append(ans.assessed_skill)
+            elif ans.technical_score < 70:
+                if ans.assessed_skill not in skills_needing_improvement:
+                    skills_needing_improvement.append(ans.assessed_skill)
+    
+    # Calculate target role skills not demonstrated
+    not_demonstrated = []
+    if gaps_data and gaps_data['status'] == 'SUCCESS':
+        all_required = [g['skill_name'] for category in gaps_data['gaps'].values() for g in category]
+        not_demonstrated = [s for s in all_required if s not in skills_demonstrated and s not in skills_needing_improvement][:5]
+        
     return render(request, 'interviews/interview_report.html', {
         'interview': interview,
         'answers': answers,
         'previous_interview': previous_interview,
         'diffs': diffs,
         'suggested_questions': suggested_questions,
+        'next_practice': next_practice,
+        'skills_demonstrated': skills_demonstrated,
+        'skills_needing_improvement': skills_needing_improvement,
+        'not_demonstrated': not_demonstrated,
+        'has_goal': bool(goal),
     })
 
 

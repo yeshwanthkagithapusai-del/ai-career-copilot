@@ -81,6 +81,68 @@
     </div>
 </div>
 
+<!-- Interview Intelligence -->
+<div class="glass-card p-4 mt-4-custom" style="border-color: var(--cyan);">
+    <h3 class="section-title"><i class="fas fa-brain text-info"></i> Interview Intelligence</h3>
+    
+    {% if not has_goal %}
+        <div class="alert alert-warning mb-4" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; font-size: 14px;">
+            <i class="fas fa-exclamation-triangle"></i> You have not set a Target Career Goal. Set one in your Profile to receive personalized skill gap analysis!
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Demonstrated Skills -->
+        <div class="col-md-6">
+            <h4 style="font-size: 15px;" class="mb-2"><i class="fas fa-check-circle text-success-custom"></i> Skills Demonstrated</h4>
+            {% if skills_demonstrated %}
+                <div class="d-flex flex-wrap gap-1">
+                    {% for skill in skills_demonstrated %}
+                        <span class="skill-tag" style="border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.1);">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+                <div class="text-muted-custom mt-2" style="font-size: 12px;">Evidence recorded in Career Intelligence.</div>
+            {% else %}
+                <p class="text-muted-custom" style="font-size: 13px;">No specific skills were strongly demonstrated.</p>
+            {% endif %}
+        </div>
+
+        <!-- Improvement Areas -->
+        <div class="col-md-6">
+            <h4 style="font-size: 15px;" class="mb-2"><i class="fas fa-arrow-up text-warning-custom"></i> Skills Needing Improvement</h4>
+            {% if skills_needing_improvement %}
+                <div class="d-flex flex-wrap gap-1">
+                    {% for skill in skills_needing_improvement %}
+                        <span class="skill-tag" style="border-color: var(--warning); color: var(--warning); background: rgba(245,158,11,0.1);">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted-custom" style="font-size: 13px;">No significant skill gaps detected in this interview.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if not_demonstrated %}
+        <div class="mt-4">
+            <h4 style="font-size: 15px;" class="mb-2"><i class="fas fa-eye-slash text-muted"></i> Target Career Skills Not Assessed</h4>
+            <div class="d-flex flex-wrap gap-1">
+                {% for skill in not_demonstrated %}
+                    <span class="skill-tag" style="border-color: var(--border-color); color: var(--text-secondary);">{{ skill }}</span>
+                {% endfor %}
+            </div>
+            <div class="text-muted-custom mt-2" style="font-size: 12px;">These skills were not demonstrated during this interview.</div>
+        </div>
+    {% endif %}
+
+    <!-- Next Practice -->
+    <div class="suggestion-card mt-4" style="border-left: 3px solid var(--cyan); background: rgba(6,182,212,0.05);">
+        <div class="suggestion-icon"><i class="fas fa-compass text-info"></i></div>
+        <div class="suggestion-text">
+            <strong>Recommended Practice:</strong> {{ next_practice }}
+        </div>
+    </div>
+</div>
+
 <!-- Question-by-Question Analysis -->
 <div class="glass-card p-4 mt-4-custom">
     <h3 class="section-title"><i class="fas fa-list-ol gradient-text"></i> Question Analysis</h3>
@@ -91,7 +153,12 @@
                     {{ answer.score }}
                 </div>
                 <div class="flex-grow-1">
-                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 8px;">{{ answer.question }}</div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div style="font-weight: 600; font-size: 15px;">{{ answer.question }}</div>
+                        {% if answer.assessed_skill %}
+                            <span class="badge" style="background: rgba(6,182,212,0.1); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); font-size: 11px;">{{ answer.assessed_skill }}</span>
+                        {% endif %}
+                    </div>
                     <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;"><strong>Your Answer:</strong> {{ answer.user_answer|truncatewords:40 }}</div>
                     <div style="font-size: 13px; color: var(--accent-glow);"><strong>AI Feedback:</strong> {{ answer.ai_feedback }}</div>
                 </div>

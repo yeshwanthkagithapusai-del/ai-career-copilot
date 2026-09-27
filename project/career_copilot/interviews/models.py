@@ -56,6 +56,7 @@ class InterviewAnswer(models.Model):
     user_answer = models.TextField(blank=True, default='')
     ai_feedback = models.TextField(blank=True, default='')
     score = models.IntegerField(default=0)
+    assessed_skill = models.CharField(max_length=200, blank=True, default='')
     technical_score = models.IntegerField(default=0)
     communication_score = models.IntegerField(default=0)
     confidence_score = models.IntegerField(default=0)
