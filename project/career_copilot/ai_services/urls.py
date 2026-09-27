@@ -18,43 +18,22 @@ def chat_endpoint(request):
     try:
         data = json.loads(request.body)
         message = data.get('message', '').strip()
+        history = data.get('history', [])
         if not message:
             return JsonResponse({'error': 'Message is required'}, status=400)
 
-        # Build user context
+        # Build safe structured career context
+        from ai_services.career_context import CareerContextService
         user = request.user
-        profile = getattr(user, 'profile', None)
-        user_context = {}
-        if profile:
-            user_context['career_goal'] = profile.career_goal
-            user_context['full_name'] = profile.full_name
-            user_context['degree'] = profile.degree
-            user_context['branch'] = profile.branch
-            user_context['academic_year'] = profile.academic_year
-
-        # Add performance context
-        from resume_analyzer.models import Resume
-        from interviews.models import InterviewSession
-        from assessments.models import Test
-        from roadmaps.models import Roadmap
-
-        latest_resume = Resume.objects.filter(user=user).order_by('-created_at').first()
-        if latest_resume:
-            user_context['latest_ats_score'] = latest_resume.ats_score
-
-        latest_interview = InterviewSession.objects.filter(user=user).order_by('-created_at').first()
-        if latest_interview:
-            user_context['latest_interview_score'] = latest_interview.overall_score
-
-        latest_test = Test.objects.filter(user=user).order_by('-created_at').first()
-        if latest_test:
-            user_context['latest_test_score'] = latest_test.score
+        user_context = CareerContextService.build_user_context(user)
 
         service = career_ai.CareerAIService()
-        response = service.chat(message, user_context)
+        response = service.chat(message, user_context, history)
 
         return JsonResponse({'response': response})
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': 'Something went wrong. Please try again.'}, status=500)
 
 

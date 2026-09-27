@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    let chatHistory = [];
+    
     function sendMessage() {
         const message = input.value.trim();
         if (!message) return;
@@ -74,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCSRFToken(),
             },
-            body: JSON.stringify({ message: message }),
+            body: JSON.stringify({ message: message, history: chatHistory }),
         })
         .then(async response => {
             const text = await response.text();
@@ -104,6 +106,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 botMsg.textContent = 'Sorry, I could not process your request. Please try again.';
             } else {
                 botMsg.textContent = data.response || 'I did not understand that. Could you rephrase?';
+                
+                // Add to history
+                chatHistory.push({ role: 'user', content: message });
+                chatHistory.push({ role: 'assistant', content: data.response });
+                // Keep only last 10 messages (5 turns) to save tokens
+                if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
             }
             messages.appendChild(botMsg);
             messages.scrollTop = messages.scrollHeight;

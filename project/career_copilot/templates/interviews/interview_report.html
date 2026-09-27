@@ -14,12 +14,18 @@
     </a>
 </div>
 
+<style>
+    .score-high { background: rgba(16,185,129,0.15); color: var(--success); }
+    .score-med { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .score-low { background: rgba(239,68,68,0.15); color: var(--error); }
+</style>
+
 <div class="row g-4">
     <!-- Overall Score -->
     <div class="col-md-4">
         <div class="glass-card p-4 text-center">
             <h3 class="mb-3">Overall Score</h3>
-            <div class="score-circle mx-auto" style="background: conic-gradient(var(--accent-glow) {{ interview.overall_score }}%, rgba(100,116,139,0.2) 0deg); width: 160px; height: 160px;">
+            <div class="score-circle mx-auto" id="overall-score-circle" data-score="{{ interview.overall_score }}" style="width: 160px; height: 160px;">
                 <div style="background: var(--bg-surface); width: 130px; height: 130px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <span class="score-circle-value gradient-text">{{ interview.overall_score }}</span>
                     <span class="score-circle-label">out of 100</span>
@@ -39,7 +45,14 @@
         <div class="glass-card p-4">
             <h3 class="section-title"><i class="fas fa-chart-bar gradient-text"></i> Score Breakdown</h3>
             <div class="chart-container">
-                <canvas id="interviewRadarChart"></canvas>
+                <canvas id="interviewRadarChart" 
+                    data-tech="{{ interview.technical_score }}"
+                    data-comm="{{ interview.communication_score }}"
+                    data-conf="{{ interview.confidence_score }}"
+                    data-rel="{{ interview.relevance_score }}"
+                    data-str="{{ interview.structure_score }}"
+                    data-cla="{{ interview.clarity_score }}">
+                </canvas>
             </div>
         </div>
     </div>
@@ -149,7 +162,7 @@
     {% for answer in answers %}
         <div class="suggestion-card" style="flex-direction: column; align-items: stretch;">
             <div class="d-flex align-items-start gap-3 mb-2">
-                <div class="suggestion-icon" style="background: {% if answer.score >= 70 %}rgba(16,185,129,0.15){% elif answer.score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if answer.score >= 70 %}var(--success){% elif answer.score >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+                <div class="suggestion-icon {% if answer.score >= 70 %}score-high{% elif answer.score >= 50 %}score-med{% else %}score-low{% endif %}">
                     {{ answer.score }}
                 </div>
                 <div class="flex-grow-1">
@@ -190,34 +203,55 @@
 {% endif %}
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Initialize overall score gradient
+    const circle = document.getElementById('overall-score-circle');
+    if (circle) {
+        const score = circle.getAttribute('data-score') || '0';
+        circle.style.background = `conic-gradient(var(--accent-glow) ${score}%, rgba(100,116,139,0.2) 0deg)`;
+    }
 
-new Chart(document.getElementById('interviewRadarChart'), {
-    type: 'radar',
-    data: {
-        labels: ['Technical', 'Communication', 'Confidence', 'Relevance', 'Structure', 'Clarity'],
-        datasets: [{
-            label: 'Current Interview',
-            data: [{{ interview.technical_score }}, {{ interview.communication_score }}, {{ interview.confidence_score }}, {{ interview.relevance_score }}, {{ interview.structure_score }}, {{ interview.clarity_score }}],
-            backgroundColor: 'rgba(139,92,246,0.2)',
-            borderColor: '#8B5CF6',
-            pointBackgroundColor: '#8B5CF6',
-            borderWidth: 2,
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            r: {
-                beginAtZero: true,
-                max: 100,
-                grid: { color: 'rgba(139,92,246,0.1)' },
-                angleLines: { color: 'rgba(139,92,246,0.1)' },
-                pointLabels: { color: '#94A3B8', font: { size: 12 } },
-                ticks: { color: '#64748B', backdropColor: 'transparent' }
+    // 2. Initialize radar chart securely from data attributes
+    const chartCanvas = document.getElementById('interviewRadarChart');
+    if (chartCanvas) {
+        const scores = [
+            parseFloat(chartCanvas.getAttribute('data-tech') || 0),
+            parseFloat(chartCanvas.getAttribute('data-comm') || 0),
+            parseFloat(chartCanvas.getAttribute('data-conf') || 0),
+            parseFloat(chartCanvas.getAttribute('data-rel') || 0),
+            parseFloat(chartCanvas.getAttribute('data-str') || 0),
+            parseFloat(chartCanvas.getAttribute('data-cla') || 0)
+        ];
+
+        new Chart(chartCanvas, {
+            type: 'radar',
+            data: {
+                labels: ['Technical', 'Communication', 'Confidence', 'Relevance', 'Structure', 'Clarity'],
+                datasets: [{
+                    label: 'Current Interview',
+                    data: scores,
+                    backgroundColor: 'rgba(139,92,246,0.2)',
+                    borderColor: '#8B5CF6',
+                    pointBackgroundColor: '#8B5CF6',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(139,92,246,0.1)' },
+                        angleLines: { color: 'rgba(139,92,246,0.1)' },
+                        pointLabels: { color: '#94A3B8', font: { size: 12 } },
+                        ticks: { color: '#64748B', backdropColor: 'transparent' }
+                    }
+                },
+                plugins: { legend: { labels: { color: '#94A3B8' } } }
             }
-        },
-        plugins: { legend: { labels: { color: '#94A3B8' } } }
+        });
     }
 });
 </script>
