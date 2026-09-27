@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Career Copilot - Your AI Copilot for Career Success{% endblock %}
+
+{% block body_class %}landing-page animated-gradient{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=2">
+{% endblock %}
+
+{% block body %}
+<div id="three-scene-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.15;"></div>
+
+<!-- Nav -->
+<nav class="position-fixed top-0 w-100 px-4 py-3" style="z-index: 100;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <div class="sidebar-logo"><i class="fas fa-robot"></i></div>
+            <span class="sidebar-title">AI Career Copilot</span>
+        </div>
+        <div class="d-flex gap-3">
+            <a href="{% url 'accounts:login' %}" class="btn-secondary-custom">Login</a>
+            <a href="{% url 'accounts:signup' %}" class="btn-primary-custom">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="landing-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Your AI Copilot for <span class="gradient-text">Career Success</span></h1>
+        <p class="hero-subtitle">Analyze your skills, improve your resume, practice interviews, and build your personalized career roadmap with AI.</p>
+        <div class="hero-cta-group">
+            <a href="{% url 'accounts:signup' %}" class="btn-primary-custom btn-shine" style="font-size: 16px; padding: 16px 36px;">
+                <i class="fas fa-rocket"></i> Start Your Career Journey
+            </a>
+            <a href="#features" class="btn-secondary-custom" style="font-size: 16px; padding: 16px 36px;">
+                <i class="fas fa-arrow-down"></i> Explore Features
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="py-5 px-4" style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 3;">
+    <h2 class="text-center mb-2" style="font-size: 40px; font-weight: 800;">Platform <span class="gradient-text">Features</span></h2>
+    <p class="text-center text-secondary-custom mb-5" style="font-size: 18px;">Everything you need to accelerate your career development</p>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-file-alt"></i></div>
+                <h3 class="feature-title">Resume ATS Analyzer</h3>
+                <p class="feature-description">Upload your resume and get an instant ATS score with AI-powered suggestions for improvement.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                <h3 class="feature-title">AI Mock Interviews</h3>
+                <p class="feature-description">Practice with dynamically generated interview questions tailored to your target role.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-laptop-code"></i></div>
+                <h3 class="feature-title">Skill Assessments</h3>
+                <p class="feature-description">Take AI-generated tests to identify your strong and weak areas across multiple skills.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
+                <h3 class="feature-title">Personalized Roadmaps</h3>
+                <p class="feature-description">Get a step-by-step learning roadmap tailored to your career goal and current skills.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <h3 class="feature-title">Progress Analytics</h3>
+                <p class="feature-description">Track your career development with real graphs showing your improvement over time.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                <h3 class="feature-title">AI Career Assistant</h3>
+                <p class="feature-description">Chat with your personal AI career coach for guidance on resumes, interviews, and skills.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5 px-4" style="max-width: 1000px; margin: 0 auto; position: relative; z-index: 3;">
+    <h2 class="text-center mb-5" style="font-size: 40px; font-weight: 800;">How It <span class="gradient-text">Works</span></h2>
+    <div class="row g-4">
+        <div class="col-md-4 text-center">
+            <div class="stat-icon purple mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;"><i class="fas fa-user-plus"></i></div>
+            <h4 class="mb-2">1. Create Your Profile</h4>
+            <p class="text-secondary-custom">Sign up and tell us your career goal, degree, and current skills.</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="stat-icon blue mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;"><i class="fas fa-chart-bar"></i></div>
+            <h4 class="mb-2">2. Assess Your Skills</h4>
+            <p class="text-secondary-custom">Upload your resume, take tests, and practice interviews to get AI analysis.</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="stat-icon cyan mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;"><i class="fas fa-trophy"></i></div>
+            <h4 class="mb-2">3. Track Your Progress</h4>
+            <p class="text-secondary-custom">Follow your personalized roadmap and watch your career progress improve.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-5 px-4" style="max-width: 800px; margin: 0 auto; position: relative; z-index: 3;">
+    <h2 class="text-center mb-5" style="font-size: 40px; font-weight: 800;">Frequently Asked <span class="gradient-text">Questions</span></h2>
+
+    <div class="faq-item">
+        <div class="faq-question"><span>Is AI Career Copilot free to use?</span><i class="fas fa-chevron-down"></i></div>
+        <div class="faq-answer"><p>Yes, AI Career Copilot is free for students. Create an account and start your career development journey today.</p></div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-question"><span>How does the ATS resume scoring work?</span><i class="fas fa-chevron-down"></i></div>
+        <div class="faq-answer"><p>Our system extracts text from your PDF or DOCX resume, analyzes keywords, skills, sections, formatting, and action verbs to calculate a comprehensive ATS compatibility score.</p></div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-question"><span>Are the interview questions the same every time?</span><i class="fas fa-chevron-down"></i></div>
+        <div class="faq-answer"><p>No, our AI generates unique questions based on your target role, difficulty level, and previous performance. Each interview is a fresh experience.</p></div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-question"><span>Can I track my progress over time?</span><i class="fas fa-chevron-down"></i></div>
+        <div class="faq-answer"><p>Yes, every assessment, interview, and resume analysis is stored. Your career progress page shows real graphs of your scores over time, including improvements and declines.</p></div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5 px-4 text-center" style="position: relative; z-index: 3;">
+    <div class="glass-card p-5" style="max-width: 700px; margin: 0 auto;">
+        <h2 style="font-size: 32px; font-weight: 800;" class="mb-3">Ready to Start Your <span class="gradient-text">Career Journey?</span></h2>
+        <p class="text-secondary-custom mb-4" style="font-size: 18px;">Join thousands of students accelerating their career development with AI.</p>
+        <a href="{% url 'accounts:signup' %}" class="btn-primary-custom btn-shine" style="font-size: 16px; padding: 16px 40px;">
+            <i class="fas fa-rocket"></i> Get Started for Free
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-4 px-4 text-center text-secondary-custom" style="border-top: 1px solid var(--border-color); position: relative; z-index: 3;">
+    <p>&copy; 2026 AI Career Copilot. Built for students, by AI.</p>
+</footer>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/three-scene.js' %}"></script>
+<script>
+    initThreeScene('three-scene-container');
+
+    // FAQ accordion toggle
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = this.closest('.faq-item');
+            var isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(function(el) { el.classList.remove('open'); });
+            if (!isOpen) item.classList.add('open');
+        });
+    });
+</script>
+{% endblock %}

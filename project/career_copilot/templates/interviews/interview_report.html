@@ -1,0 +1,157 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Interview Report - AI Career Copilot{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Interview <span class="gradient-text">Report</span></h1>
+        <p class="page-subtitle">{{ interview.get_interview_type_display }} - {{ interview.target_role }} - {{ interview.created_at|date:"M d, Y" }}</p>
+    </div>
+    <a href="{% url 'interviews:interview_setup' %}" class="btn-primary-custom">
+        <i class="fas fa-redo"></i> New Interview
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Overall Score -->
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <h3 class="mb-3">Overall Score</h3>
+            <div class="score-circle mx-auto" style="background: conic-gradient(var(--accent-glow) {{ interview.overall_score }}%, rgba(100,116,139,0.2) 0deg); width: 160px; height: 160px;">
+                <div style="background: var(--bg-surface); width: 130px; height: 130px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <span class="score-circle-value gradient-text">{{ interview.overall_score }}</span>
+                    <span class="score-circle-label">out of 100</span>
+                </div>
+            </div>
+            {% if diffs %}
+                <div class="stat-change {% if diffs.overall > 0 %}positive{% elif diffs.overall < 0 %}negative{% else %}neutral{% endif %} mt-3">
+                    <i class="fas fa-arrow-{% if diffs.overall > 0 %}up{% elif diffs.overall < 0 %}down{% else %}right{% endif %}"></i>
+                    {% if diffs.overall > 0 %}+{% endif %}{{ diffs.overall }} from previous
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Score Breakdown -->
+    <div class="col-md-8">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-chart-bar gradient-text"></i> Score Breakdown</h3>
+            <div class="chart-container">
+                <canvas id="interviewRadarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <!-- Strengths -->
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-thumbs-up text-success-custom"></i> Strengths</h3>
+            {% if interview.strengths %}
+                {% for strength in interview.strengths %}
+                    <div class="suggestion-card" style="border-color: rgba(16,185,129,0.3);">
+                        <div class="suggestion-icon" style="background: rgba(16,185,129,0.15); color: var(--success);"><i class="fas fa-check"></i></div>
+                        <div class="suggestion-text">{{ strength }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted-custom">No specific strengths identified. Keep practicing!</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Weaknesses -->
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-exclamation-triangle text-warning-custom"></i> Areas for Improvement</h3>
+            {% if interview.weaknesses %}
+                {% for weakness in interview.weaknesses %}
+                    <div class="suggestion-card" style="border-color: rgba(245,158,11,0.3);">
+                        <div class="suggestion-icon" style="background: rgba(245,158,11,0.15); color: var(--warning);"><i class="fas fa-exclamation"></i></div>
+                        <div class="suggestion-text">{{ weakness }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted-custom">No major weaknesses identified. Great job!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Question-by-Question Analysis -->
+<div class="glass-card p-4 mt-4-custom">
+    <h3 class="section-title"><i class="fas fa-list-ol gradient-text"></i> Question Analysis</h3>
+    {% for answer in answers %}
+        <div class="suggestion-card" style="flex-direction: column; align-items: stretch;">
+            <div class="d-flex align-items-start gap-3 mb-2">
+                <div class="suggestion-icon" style="background: {% if answer.score >= 70 %}rgba(16,185,129,0.15){% elif answer.score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if answer.score >= 70 %}var(--success){% elif answer.score >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+                    {{ answer.score }}
+                </div>
+                <div class="flex-grow-1">
+                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 8px;">{{ answer.question }}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;"><strong>Your Answer:</strong> {{ answer.user_answer|truncatewords:40 }}</div>
+                    <div style="font-size: 13px; color: var(--accent-glow);"><strong>AI Feedback:</strong> {{ answer.ai_feedback }}</div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if suggested_questions %}
+<!-- Suggestion Box: Saved Questions for Practice -->
+<div class="glass-card p-4 mt-4-custom">
+    <h3 class="section-title"><i class="fas fa-lightbulb text-warning me-2"></i> Suggestion Box (Weak Questions for Practice)</h3>
+    <p class="text-muted-custom" style="font-size: 13px; margin-bottom: 15px;">Questions you scored under 70% in this or previous interviews are automatically stored here for future revision:</p>
+    {% for sq in suggested_questions %}
+        <div class="suggestion-card mb-2" style="background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2);">
+            <div class="suggestion-icon text-warning">
+                <i class="fas fa-bookmark"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">{{ sq.question }}</div>
+                <div class="text-muted-custom" style="font-size: 12px; margin-bottom: 4px;"><strong>Topic:</strong> {{ sq.topic }} &nbsp;|&nbsp; <strong>Score:</strong> <span class="text-warning font-bold">{{ sq.score }}/100</span></div>
+                {% if sq.ai_feedback %}
+                    <div style="font-size: 12px; color: var(--text-secondary);"><strong>Feedback:</strong> {{ sq.ai_feedback }}</div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+
+new Chart(document.getElementById('interviewRadarChart'), {
+    type: 'radar',
+    data: {
+        labels: ['Technical', 'Communication', 'Confidence', 'Relevance', 'Structure', 'Clarity'],
+        datasets: [{
+            label: 'Current Interview',
+            data: [{{ interview.technical_score }}, {{ interview.communication_score }}, {{ interview.confidence_score }}, {{ interview.relevance_score }}, {{ interview.structure_score }}, {{ interview.clarity_score }}],
+            backgroundColor: 'rgba(139,92,246,0.2)',
+            borderColor: '#8B5CF6',
+            pointBackgroundColor: '#8B5CF6',
+            borderWidth: 2,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            r: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: 'rgba(139,92,246,0.1)' },
+                angleLines: { color: 'rgba(139,92,246,0.1)' },
+                pointLabels: { color: '#94A3B8', font: { size: 12 } },
+                ticks: { color: '#64748B', backdropColor: 'transparent' }
+            }
+        },
+        plugins: { legend: { labels: { color: '#94A3B8' } } }
+    }
+});
+</script>
+{% endblock %}

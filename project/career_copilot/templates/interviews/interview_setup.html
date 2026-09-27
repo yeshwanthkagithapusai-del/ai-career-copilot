@@ -1,0 +1,116 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}AI Mock Interview - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">AI Mock <span class="gradient-text">Interview</span></h1>
+<p class="page-subtitle">Practice with AI-generated interview questions tailored to your target role</p>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-cog gradient-text"></i> Interview Setup</h3>
+            <form method="post" action="{% url 'interviews:start_interview' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">Target Role *</label>
+                    <input type="text" name="target_role" class="form-input" placeholder="e.g., Software Engineer" required value="{{ profile.career_goal|default:'' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Interview Type</label>
+                    <select name="interview_type" class="form-input">
+                        <option value="technical">Technical</option>
+                        <option value="hr">HR</option>
+                        <option value="behavioral">Behavioral</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Difficulty</label>
+                            <select name="difficulty" class="form-input">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate" selected>Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Number of Questions</label>
+                            <select name="num_questions" class="form-input">
+                                <option value="3">3 Questions</option>
+                                <option value="5" selected>5 Questions</option>
+                                <option value="7">7 Questions</option>
+                                <option value="10">10 Questions</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary-custom btn-shine w-100">
+                    <i class="fas fa-play"></i> Start Interview
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-lg-5">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-history gradient-text"></i> Recent Interviews</h3>
+            {% if interviews %}
+                {% for interview in interviews %}
+                    <div class="suggestion-card">
+                        <div class="suggestion-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div style="font-weight: 600; font-size: 14px;">
+                                {{ interview.get_interview_type_display }} - Score: {{ interview.overall_score }}/100
+                            </div>
+                            <div class="text-muted-custom" style="font-size: 12px;">
+                                {{ interview.created_at|date:"M d, Y" }} - {{ interview.target_role }}
+                            </div>
+                            <a href="{% url 'interviews:interview_report' interview.id %}" style="font-size: 13px;">
+                                View Report <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+                <a href="{% url 'interviews:interview_history' %}" class="btn-secondary-custom w-100 mt-3">View All History</a>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-microphone"></i></div>
+                    <div class="empty-state-title">No interviews yet</div>
+                    <div class="empty-state-text">Complete your first mock interview to get AI feedback on your performance.</div>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if suggested_questions %}
+        <!-- Suggestion Box Card -->
+        <div class="glass-card p-4 mt-4">
+            <h3 class="section-title"><i class="fas fa-lightbulb text-warning me-2"></i> Suggestion Box</h3>
+            <p class="text-muted-custom" style="font-size: 13px;">Questions you struggled with (scored &lt; 70) saved for practice:</p>
+            {% for sq in suggested_questions %}
+                <div class="suggestion-card mb-2" style="background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2);">
+                    <div class="suggestion-icon text-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div style="font-weight: 600; font-size: 13px;">{{ sq.question }}</div>
+                        <div class="text-muted-custom" style="font-size: 12px;">Topic: {{ sq.topic }} &middot; Score: <strong class="text-warning">{{ sq.score }}/100</strong></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

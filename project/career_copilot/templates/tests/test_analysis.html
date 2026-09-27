@@ -1,0 +1,158 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Test Analysis - AI Career Copilot{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Test <span class="gradient-text">Analysis</span></h1>
+        <p class="page-subtitle">{{ test.skill }} - {{ test.get_difficulty_display|default:test.difficulty }} - {{ test.created_at|date:"M d, Y" }}</p>
+    </div>
+    <a href="{% url 'assessments:test_setup' %}" class="btn-primary-custom">
+        <i class="fas fa-redo"></i> Take Another Test
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Score Summary -->
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <h3 class="mb-3">Your Score</h3>
+            <div class="score-circle mx-auto" style="background: conic-gradient(var(--accent-glow) {{ test.score }}%, rgba(100,116,139,0.2) 0deg); width: 160px; height: 160px;">
+                <div style="background: var(--bg-surface); width: 130px; height: 130px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <span class="score-circle-value gradient-text">{{ test.score }}%</span>
+                    <span class="score-circle-label">accuracy</span>
+                </div>
+            </div>
+            {% if diff is not None %}
+                <div class="stat-change {% if diff > 0 %}positive{% elif diff < 0 %}negative{% else %}neutral{% endif %} mt-3">
+                    <i class="fas fa-arrow-{% if diff > 0 %}up{% elif diff < 0 %}down{% else %}right{% endif %}"></i>
+                    {% if diff > 0 %}+{% endif %}{{ diff }} from previous test
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="col-md-8">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-chart-bar gradient-text"></i> Performance Stats</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="stat-card" style="padding: 16px;">
+                        <div class="stat-value text-success-custom">{{ test.correct_count }}</div>
+                        <div class="stat-label">Correct Answers</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card" style="padding: 16px;">
+                        <div class="stat-value text-error-custom">{{ test.wrong_count }}</div>
+                        <div class="stat-label">Wrong Answers</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card" style="padding: 16px;">
+                        <div class="stat-value text-warning-custom">{{ test.time_taken }}s</div>
+                        <div class="stat-label">Time Taken</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if test.topic_performance %}
+            <div class="mt-4">
+                <h4 style="font-size: 16px; margin-bottom: 12px;">Topic Performance</h4>
+                {% for topic, stats in test.topic_performance.items %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size: 14px;">{{ topic }}</span>
+                            <span style="font-size: 14px; font-weight: 600;">{{ stats.accuracy }}% ({{ stats.correct }}/{{ stats.total }})</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: {{ stats.accuracy }}%; background: {% if stats.accuracy >= 70 %}var(--success){% elif stats.accuracy >= 50 %}var(--warning){% else %}var(--error){% endif %};"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <!-- Strong Topics -->
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-thumbs-up text-success-custom"></i> Strong Topics</h3>
+            {% if test.strong_topics %}
+                {% for topic, accuracy in test.strong_topics %}
+                    <div class="suggestion-card" style="border-color: rgba(16,185,129,0.3);">
+                        <div class="suggestion-icon" style="background: rgba(16,185,129,0.15); color: var(--success);"><i class="fas fa-check"></i></div>
+                        <div class="suggestion-text"><strong>{{ topic }}</strong> - {{ accuracy }}% accuracy</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted-custom">No strong topics identified yet. Keep practicing!</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Weak Topics -->
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-exclamation-triangle text-warning-custom"></i> Weak Topics</h3>
+            {% if test.weak_topics %}
+                {% for topic, accuracy in test.weak_topics %}
+                    <div class="suggestion-card" style="border-color: rgba(245,158,11,0.3);">
+                        <div class="suggestion-icon" style="background: rgba(245,158,11,0.15); color: var(--warning);"><i class="fas fa-exclamation"></i></div>
+                        <div class="suggestion-text"><strong>{{ topic }}</strong> - {{ accuracy }}% accuracy</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-success-custom">No weak topics - excellent performance!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- AI Suggestions -->
+<div class="glass-card p-4 mt-4-custom">
+    <h3 class="section-title"><i class="fas fa-robot gradient-text"></i> AI Suggestions</h3>
+    {% for suggestion in test.suggestions %}
+        <div class="suggestion-card">
+            <div class="suggestion-icon"><i class="fas fa-lightbulb"></i></div>
+            <div class="suggestion-text">{{ suggestion }}</div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Question Review -->
+<div class="glass-card p-4 mt-4-custom">
+    <h3 class="section-title"><i class="fas fa-list-ol gradient-text"></i> Question Review</h3>
+    {% for answer in answers %}
+        <div class="suggestion-card" style="flex-direction: column; align-items: stretch;">
+            <div class="d-flex align-items-start gap-3">
+                <div class="suggestion-icon" style="background: {% if answer.is_correct %}rgba(16,185,129,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if answer.is_correct %}var(--success){% else %}var(--error){% endif %};">
+                    <i class="fas fa-{% if answer.is_correct %}check{% else %}times{% endif %}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 8px;">{{ answer.question }}</div>
+                    <div style="font-size: 13px; margin-bottom: 4px;">
+                        <span class="text-muted-custom">Your answer:</span> 
+                        <span class="{% if answer.is_correct %}text-success-custom{% else %}text-error-custom{% endif %}">
+                            {% if answer.selected_answer >= 0 and answer.selected_answer < answer.options|length %}{{ answer.options|slice:answer.selected_answer|first }}{% else %}Not answered{% endif %}
+                        </span>
+                    </div>
+                    {% if not answer.is_correct %}
+                    <div style="font-size: 13px;">
+                        <span class="text-muted-custom">Correct answer:</span> 
+                        <span class="text-success-custom">{{ answer.options|slice:answer.correct_answer|first }}</span>
+                    </div>
+                    {% endif %}
+                    <span class="skill-tag" style="font-size: 11px; margin-top: 4px;">{{ answer.topic }}</span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

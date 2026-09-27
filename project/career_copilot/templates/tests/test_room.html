@@ -1,0 +1,155 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Test Room - AI Career Copilot{% endblock %}
+
+{% block content %}
+<div class="interview-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">{{ test.skill }} <span class="gradient-text">Test</span></h1>
+            <p class="page-subtitle">{{ test.get_difficulty_display|default:test.difficulty }} - {{ test.num_questions }} Questions</p>
+        </div>
+        <div class="text-center">
+            <div id="test-timer" style="font-size: 28px; font-weight: 700; color: var(--accent-glow);">0:00</div>
+            <div class="text-muted-custom" style="font-size: 12px;">Time Elapsed</div>
+        </div>
+    </div>
+    
+    <!-- Progress -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between mb-2">
+            <span style="font-size: 14px; color: var(--text-secondary);">Question <span id="current-q">1</span> of {{ answers|length }}</span>
+            <span style="font-size: 14px; color: var(--text-secondary);"><span id="answered-count">0</span> answered</span>
+        </div>
+        <div class="progress-bar-container" style="height: 6px;">
+            <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
+        </div>
+    </div>
+    
+    <!-- Questions -->
+    <form id="test-form">
+        {% csrf_token %}
+        {% for answer in answers %}
+        <div class="test-question" id="question-{{ forloop.counter0 }}" style="{% if forloop.counter0 > 0 %}display: none;{% endif %}">
+            <div class="question-number">Question {{ forloop.counter }}</div>
+            <div class="question-text" style="font-size: 18px; margin-bottom: 16px;">{{ answer.question }}</div>
+            
+            <div class="options-container">
+                {% for option in answer.options %}
+                <label class="test-option" data-question="{{ forloop.parentloop.counter0 }}" data-option="{{ forloop.counter0 }}">
+                    <input type="radio" name="answer_{{ answer.id }}" value="{{ forloop.counter0 }}" onchange="selectOption(this, {{ forloop.parentloop.counter0 }})">
+                    <span>{{ option }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            
+            <div class="d-flex justify-content-between mt-3">
+                {% if forloop.counter0 > 0 %}
+                <button type="button" class="btn-secondary-custom" onclick="prevQuestion({{ forloop.counter0 }})">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                {% else %}
+                <span></span>
+                {% endif %}
+                
+                {% if forloop.counter0 < answers|length|add:'-1' %}
+                <button type="button" class="btn-primary-custom" onclick="nextQuestion({{ forloop.counter0 }})">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                {% else %}
+                <button type="button" class="btn-primary-custom btn-shine" onclick="submitTest()">
+                    <i class="fas fa-check"></i> Submit Test
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </form>
+</div>
+
+<script>
+const totalQuestions = {{ answers|length }};
+let currentQuestion = 0;
+let answeredCount = 0;
+let startTime = Date.now();
+const answers = {};
+
+// Timer
+setInterval(function() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    document.getElementById('test-timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+}, 1000);
+
+function selectOption(radio, qIndex) {
+    answers[qIndex] = parseInt(radio.value);
+    
+    // Update UI
+    document.querySelectorAll(`.test-option[data-question="${qIndex}"]`).forEach(function(opt) {
+        opt.classList.remove('selected');
+    });
+    radio.closest('.test-option').classList.add('selected');
+    
+    // Count answered
+    answeredCount = Object.keys(answers).length;
+    document.getElementById('answered-count').textContent = answeredCount;
+    document.getElementById('progress-bar').style.width = `${(answeredCount / totalQuestions) * 100}%`;
+}
+
+function nextQuestion(current) {
+    document.getElementById(`question-${current}`).style.display = 'none';
+    document.getElementById(`question-${current + 1}`).style.display = 'block';
+    currentQuestion = current + 1;
+    document.getElementById('current-q').textContent = currentQuestion + 1;
+}
+
+function prevQuestion(current) {
+    document.getElementById(`question-${current}`).style.display = 'none';
+    document.getElementById(`question-${current - 1}`).style.display = 'block';
+    currentQuestion = current - 1;
+    document.getElementById('current-q').textContent = currentQuestion + 1;
+}
+
+function submitTest() {
+    if (Object.keys(answers).length < totalQuestions) {
+        if (!confirm(`You have answered ${Object.keys(answers).length} out of ${totalQuestions} questions. Unanswered questions will be marked as wrong. Submit anyway?`)) {
+            return;
+        }
+    }
+    
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Show loading
+    document.getElementById('test-form').innerHTML = `
+        <div class="ai-loader">
+            <div class="ai-loader-spinner"></div>
+            <div class="ai-loader-text">Analyzing your performance...</div>
+        </div>
+    `;
+    
+    fetch(`/assessments/room/{{ test.id }}/submit/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ answers: answers, time_taken: timeTaken }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.error || 'Failed to submit test. Please try again.');
+            location.reload();
+        }
+    })
+    .catch(function() {
+        alert('Network error. Please try again.');
+        location.reload();
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Resume History{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Resume <span class="gradient-text">History</span></h1>
+<p class="page-subtitle">All your resume analyses over time</p>
+
+{% if resumes %}
+<div class="glass-card p-4">
+    <div class="chart-container mb-4">
+        <canvas id="atsHistoryChart"></canvas>
+    </div>
+    
+    {% for resume in resumes %}
+        <div class="suggestion-card">
+            <div class="suggestion-icon" style="background: {% if resume.ats_score >= 70 %}rgba(16,185,129,0.15){% elif resume.ats_score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if resume.ats_score >= 70 %}var(--success){% elif resume.ats_score >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+                {{ resume.ats_score }}
+            </div>
+            <div class="flex-grow-1">
+                <div style="font-weight: 600;">ATS Score: {{ resume.ats_score }}/100</div>
+                <div class="text-muted-custom" style="font-size: 13px;">
+                    {{ resume.created_at|date:"M d, Y H:i" }}
+                    {% if resume.target_role %} - {{ resume.target_role }}{% endif %}
+                </div>
+                <a href="{% url 'resume_analyzer:ats_report' resume.id %}" style="font-size: 13px;">View Report <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card p-4">
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-file-alt"></i></div>
+        <div class="empty-state-title">No resume analyses yet</div>
+        <div class="empty-state-text">Upload your first resume to start tracking your ATS score improvement.</div>
+        <a href="{% url 'resume_analyzer:resume_analyzer' %}" class="btn-primary-custom">
+            <i class="fas fa-upload"></i> Upload Resume
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<script>
+{% if resumes %}
+const atsData = [
+    {% for resume in resumes reversed %}
+    { x: '{{ resume.created_at|date:"M d" }}', y: {{ resume.ats_score }} },
+    {% endfor %}
+];
+
+new Chart(document.getElementById('atsHistoryChart'), {
+    type: 'line',
+    data: {
+        labels: atsData.map(d => d.x),
+        datasets: [{
+            label: 'ATS Score',
+            data: atsData.map(d => d.y),
+            borderColor: '#7C3AED',
+            backgroundColor: 'rgba(124,58,237,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#8B5CF6',
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94A3B8' } } },
+        scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } },
+            x: { grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,429 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Interview Room - AI Career Copilot{% endblock %}
+
+{% block content %}
+<div class="interview-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">Interview <span class="gradient-text">Room</span></h1>
+            <p class="page-subtitle">{{ interview.get_interview_type_display|default:interview.interview_type }} - {{ interview.target_role }} - {{ interview.get_difficulty_display|default:interview.difficulty }}</p>
+        </div>
+        <div class="text-center">
+            <div id="timer" style="font-size: 28px; font-weight: 700; color: var(--accent-glow);">0:00</div>
+            <div class="text-muted-custom" style="font-size: 12px;">Elapsed Time</div>
+        </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between mb-2">
+            <span style="font-size: 14px; color: var(--text-secondary);">Question <span id="current-q">1</span> of {{ answers|length }}</span>
+            <span style="font-size: 14px; color: var(--text-secondary);"><span id="answered-count">0</span> answered</span>
+        </div>
+        <div class="progress-bar-container" style="height: 6px;">
+            <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    <div id="questions-container">
+        {% for answer in answers %}
+        <div class="question-card" id="question-{{ forloop.counter0 }}" style="{% if forloop.counter0 > 0 %}display: none;{% endif %}">
+            <div class="question-number">Question {{ forloop.counter }}</div>
+            <div class="question-text">{{ answer.question }}</div>
+
+            <div class="form-group" style="position: relative; z-index: 2;">
+                <label class="form-label">Your Answer</label>
+                <textarea class="answer-textarea" id="answer-{{ answer.id }}"
+                    data-answer-id="{{ answer.id }}"
+                    data-question-index="{{ forloop.counter0 }}"
+                    placeholder="Type your answer here, or click 'Voice Answer' to speak..."
+                    autocomplete="off" spellcheck="true" tabindex="0"></textarea>
+
+                <!-- Live transcription status banner -->
+                <div id="voice-status-{{ answer.id }}"
+                     style="display:none; margin-top:8px; padding:10px 14px; border-radius:8px;
+                            background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.4);
+                            font-size:13px; color:var(--text-secondary);">
+                    <i class="fas fa-circle" style="font-size:9px; color:#ef4444;"></i>
+                    <span id="voice-status-text-{{ answer.id }}">Listening...</span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap" style="position: relative; z-index: 2;">
+                <button class="btn-primary-custom" type="button"
+                    onclick="saveAnswer({{ answer.id }}, {{ forloop.counter0 }}, {{ forloop.counter0|add:1 }})"
+                    id="save-btn-{{ answer.id }}">
+                    <i class="fas fa-paper-plane"></i> Submit Answer
+                </button>
+                <button class="btn-secondary-custom" type="button"
+                    onclick="startVoice({{ answer.id }})"
+                    id="record-btn-{{ answer.id }}">
+                    <i class="fas fa-microphone"></i> Voice Answer
+                </button>
+                <button class="btn-secondary-custom" type="button"
+                    onclick="stopVoice({{ answer.id }})"
+                    id="stop-record-btn-{{ answer.id }}"
+                    style="display:none; background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.5);">
+                    <i class="fas fa-stop"></i> Stop Recording
+                </button>
+            </div>
+
+            <div id="feedback-{{ answer.id }}" class="mt-3"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Complete Interview -->
+    <div class="text-center mt-4" id="complete-section" style="display: none;">
+        <form method="post" action="{% url 'interviews:complete_interview' interview.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary-custom btn-shine" style="padding: 16px 40px;">
+                <i class="fas fa-flag-checkered"></i> Complete Interview &amp; Generate Report
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+const totalQuestions = {{ answers|length }};
+let answeredQuestions = 0;
+let startTime = Date.now();
+const CSRF_TOKEN = "{{ csrf_token }}";
+
+// Timer
+setInterval(function () {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    document.getElementById("timer").textContent = mins + ":" + String(secs).padStart(2, "0");
+}, 1000);
+
+// ── Submit answer ──────────────────────────────────────────────
+function saveAnswer(answerId, currentIndex, nextIndex) {
+    const textarea = document.getElementById("answer-" + answerId);
+    const answer   = textarea.value.trim();
+
+    if (!answer) {
+        alert("Please type or speak your answer before submitting.");
+        return;
+    }
+
+    const btn = document.getElementById("save-btn-" + answerId);
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Evaluating...';
+    btn.disabled  = true;
+
+    fetch("/interviews/room/{{ interview.id }}/submit/" + answerId + "/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN },
+        body: JSON.stringify({ answer: answer }),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (data.success) {
+            const ev = data.evaluation;
+            document.getElementById("feedback-" + answerId).innerHTML =
+                '<div class="glass-card p-3" style="border-color: var(--success);">' +
+                  '<div class="d-flex align-items-center gap-3 mb-2">' +
+                    '<div style="font-size:28px;font-weight:800;" class="gradient-text">' + ev.score + '/100</div>' +
+                    '<div>' +
+                      '<div style="font-size:13px;color:var(--text-secondary);">AI Evaluation</div>' +
+                      '<div style="font-size:12px;">Tech: ' + ev.technical_score + ' | Comm: ' + ev.communication_score + '</div>' +
+                    '</div>' +
+                  '</div>' +
+                  '<p style="font-size:14px;color:var(--text-secondary);">' + ev.feedback + '</p>' +
+                '</div>';
+
+            answeredQuestions++;
+            document.getElementById("answered-count").textContent = answeredQuestions;
+            document.getElementById("progress-bar").style.width =
+                ((answeredQuestions / totalQuestions) * 100) + "%";
+
+            btn.innerHTML = '<i class="fas fa-check"></i> Answer Saved';
+            btn.style.background = "var(--success)";
+
+            if (nextIndex < totalQuestions) {
+                setTimeout(function () {
+                    document.getElementById("question-" + currentIndex).style.display = "none";
+                    document.getElementById("question-" + nextIndex).style.display    = "block";
+                    document.getElementById("current-q").textContent = nextIndex + 1;
+                }, 1500);
+            } else {
+                setTimeout(function () {
+                    document.getElementById("question-" + currentIndex).style.display = "none";
+                    document.getElementById("complete-section").style.display          = "block";
+                    document.getElementById("progress-bar").style.width               = "100%";
+                }, 1500);
+            }
+        } else {
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Answer';
+            btn.disabled  = false;
+            alert(data.error || "Failed to submit answer. Please try again.");
+        }
+    })
+    .catch(function () {
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Answer';
+        btn.disabled  = false;
+        alert("Network error. Please try again.");
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  VOICE ANSWER  — Robust two-tier approach
+//
+//  Priority 1: Web Speech API (SpeechRecognition) — Chrome/Edge
+//              Works instantly, no API key, real-time text in textarea
+//
+//  Priority 2: MediaRecorder + OpenAI Whisper (server-side)
+//              For Firefox / Safari / browsers without Speech API
+// ─────────────────────────────────────────────────────────────────────
+
+var SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+// State
+var voiceAnswerId      = null;   // which question is currently recording
+var recognitionObj     = null;   // SpeechRecognition instance
+var recognitionRunning = false;  // guard against double-start
+var accumulatedText    = "";     // text accumulated across restarts
+var mediaRecorderObj   = null;   // MediaRecorder for Whisper fallback
+var audioChunks        = [];
+
+// ── UI helpers ────────────────────────────────────────────────
+function setVoiceStatus(id, msg, show) {
+    var el  = document.getElementById("voice-status-"      + id);
+    var txt = document.getElementById("voice-status-text-" + id);
+    if (el)  el.style.display  = show ? "block" : "none";
+    if (txt) txt.textContent   = msg;
+}
+
+function setRecordUI(id, isRecording) {
+    var rec  = document.getElementById("record-btn-"      + id);
+    var stop = document.getElementById("stop-record-btn-" + id);
+    if (!rec || !stop) return;
+    if (isRecording) {
+        rec.style.display  = "none";
+        stop.style.display = "inline-flex";
+    } else {
+        rec.style.display  = "inline-flex";
+        stop.style.display = "none";
+        rec.innerHTML = '<i class="fas fa-microphone"></i> Re-record';
+    }
+}
+
+function appendToTextarea(id, text) {
+    var ta = document.getElementById("answer-" + id);
+    if (ta && text) {
+        // Append to existing typed text (don't overwrite if user typed something)
+        var current = ta.value;
+        ta.value = current + (current && !current.endsWith(" ") ? " " : "") + text;
+    }
+}
+
+// ── Tier 1: Web Speech API ────────────────────────────────────
+//
+//  Key fix: Use continuous=false and restart manually.
+//  This avoids the silent-timeout bug in Chrome where continuous
+//  mode stops firing results after ~60 seconds or on silence.
+//  We restart automatically until the user clicks Stop.
+// ─────────────────────────────────────────────────────────────
+
+function createRecognition(id) {
+    var r = new SpeechRecognitionAPI();
+    r.lang             = "en-US";
+    r.interimResults   = true;   // show words as you speak
+    r.maxAlternatives  = 1;
+    r.continuous       = false;  // IMPORTANT: false is more reliable
+
+    var sessionInterim = "";
+
+    r.onstart = function () {
+        recognitionRunning = true;
+        if (!voiceAnswerId) return;
+        setVoiceStatus(id, "Listening... speak now.", true);
+    };
+
+    r.onresult = function (event) {
+        sessionInterim = "";
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+            var transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                accumulatedText += transcript + " ";
+            } else {
+                sessionInterim = transcript;
+            }
+        }
+        // Write accumulated + live interim to textarea
+        var ta = document.getElementById("answer-" + id);
+        if (ta) {
+            ta.value = accumulatedText + (sessionInterim ? sessionInterim : "");
+        }
+        setVoiceStatus(id, sessionInterim ? '"' + sessionInterim + '"' : "Listening...", true);
+    };
+
+    r.onerror = function (event) {
+        recognitionRunning = false;
+        // "no-speech" and "aborted" are normal — just restart silently
+        if (event.error === "no-speech" || event.error === "aborted") {
+            if (voiceAnswerId === id) {
+                setTimeout(function () { restartRecognition(id); }, 200);
+            }
+            return;
+        }
+        // Real errors
+        console.warn("SpeechRecognition error:", event.error);
+        setVoiceStatus(id, "Mic error: " + event.error + ". Try again.", true);
+        setRecordUI(id, false);
+        voiceAnswerId = null;
+    };
+
+    r.onend = function () {
+        recognitionRunning = false;
+        // Auto-restart while recording is still active
+        if (voiceAnswerId === id) {
+            setTimeout(function () { restartRecognition(id); }, 100);
+        } else {
+            // User stopped — clean up interim brackets
+            var ta = document.getElementById("answer-" + id);
+            if (ta) ta.value = accumulatedText.trim();
+            if (accumulatedText.trim()) {
+                setVoiceStatus(id, "Done! Review your answer above and click Submit.", true);
+                setTimeout(function () { setVoiceStatus(id, "", false); }, 5000);
+            } else {
+                setVoiceStatus(id, "No speech detected. Try again or type your answer.", true);
+            }
+            setRecordUI(id, false);
+        }
+    };
+
+    return r;
+}
+
+function restartRecognition(id) {
+    if (voiceAnswerId !== id || recognitionRunning) return;
+    try {
+        recognitionObj = createRecognition(id);
+        recognitionObj.start();
+    } catch (e) {
+        console.warn("Recognition restart failed:", e);
+        // Wait a bit and retry
+        setTimeout(function () { restartRecognition(id); }, 500);
+    }
+}
+
+function startWithWebSpeech(id) {
+    voiceAnswerId   = id;
+    accumulatedText = "";
+
+    // Preserve any text the user already typed
+    var ta = document.getElementById("answer-" + id);
+    if (ta && ta.value.trim()) {
+        accumulatedText = ta.value.trim() + " ";
+    }
+
+    setRecordUI(id, true);
+    setVoiceStatus(id, "Starting microphone...", true);
+
+    recognitionObj = createRecognition(id);
+    try {
+        recognitionObj.start();
+    } catch (e) {
+        console.error("Could not start recognition:", e);
+        alert("Could not start voice recognition. Make sure your browser allows microphone access.");
+        setRecordUI(id, false);
+        setVoiceStatus(id, "", false);
+        voiceAnswerId = null;
+    }
+}
+
+function stopWebSpeech(id) {
+    voiceAnswerId = null;  // signal onend not to restart
+    if (recognitionObj) {
+        try { recognitionObj.stop(); } catch (e) {}
+        recognitionObj = null;
+    }
+    recognitionRunning = false;
+}
+
+// ── Tier 2: MediaRecorder + Whisper ──────────────────────────
+function startWithWhisper(id) {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function (stream) {
+            mediaRecorderObj = new MediaRecorder(stream);
+            audioChunks = [];
+            voiceAnswerId = id;
+
+            mediaRecorderObj.addEventListener("dataavailable", function (e) {
+                if (e.data.size > 0) audioChunks.push(e.data);
+            });
+
+            mediaRecorderObj.addEventListener("stop", function () {
+                stream.getTracks().forEach(function (t) { t.stop(); });
+                voiceAnswerId = null;
+
+                var audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                setVoiceStatus(id, "Transcribing your answer... please wait.", true);
+                setRecordUI(id, false);
+
+                var fd = new FormData();
+                fd.append("audio", audioBlob, "answer.webm");
+
+                fetch("/api/ai/transcribe/", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": CSRF_TOKEN },
+                    body: fd,
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.success && data.transcript) {
+                        var ta = document.getElementById("answer-" + id);
+                        if (ta) ta.value = data.transcript;
+                        setVoiceStatus(id, "Done! Review your answer above and click Submit.", true);
+                        setTimeout(function () { setVoiceStatus(id, "", false); }, 5000);
+                    } else if (data.error === "no_api_key") {
+                        setVoiceStatus(id, "No OpenAI key configured. Please type your answer manually.", true);
+                    } else {
+                        setVoiceStatus(id, (data.message || "Transcription failed.") + " Please type manually.", true);
+                    }
+                })
+                .catch(function () {
+                    setVoiceStatus(id, "Network error. Please type your answer manually.", true);
+                });
+            });
+
+            mediaRecorderObj.start();
+            setRecordUI(id, true);
+            setVoiceStatus(id, "Recording... click Stop Recording when done speaking.", true);
+        })
+        .catch(function (err) {
+            console.error("Microphone error:", err);
+            alert("Could not access microphone. Please allow microphone access in your browser and try again.");
+        });
+}
+
+function stopWhisper(id) {
+    if (mediaRecorderObj && mediaRecorderObj.state !== "inactive") {
+        mediaRecorderObj.stop();
+        mediaRecorderObj = null;
+    }
+}
+
+// ── Public entry points ───────────────────────────────────────
+function startVoice(id) {
+    if (SpeechRecognitionAPI) {
+        startWithWebSpeech(id);
+    } else {
+        startWithWhisper(id);
+    }
+}
+
+function stopVoice(id) {
+    if (SpeechRecognitionAPI) {
+        stopWebSpeech(id);
+    } else {
+        stopWhisper(id);
+    }
+}
+</script>
+{% endblock %}

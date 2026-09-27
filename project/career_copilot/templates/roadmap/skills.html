@@ -1,0 +1,90 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Skills - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Your <span class="gradient-text">Skills</span></h1>
+<p class="page-subtitle">Skills detected from your resumes, tests, and manual entries</p>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-plus gradient-text"></i> Add Skill</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">Skill Name</label>
+                    <input type="text" name="skill_name" class="form-input" placeholder="e.g., Python" required>
+                </div>
+                <button type="submit" class="btn-primary-custom btn-shine w-100">
+                    <i class="fas fa-plus"></i> Add Skill
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-brain gradient-text"></i> Tracked Skills ({{ skills|length }})</h3>
+            
+            {% if skills %}
+                <div class="chart-container-sm mb-4">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+                
+                {% for skill in skills %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size: 14px; font-weight: 600;">{{ skill.skill_name }}</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size: 14px; font-weight: 600;">{{ skill.skill_score }}</span>
+                                <span class="badge-custom badge-low" style="font-size: 10px;">{{ skill.source }}</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: {{ skill.skill_score }}%;"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-lightbulb"></i></div>
+                    <div class="empty-state-title">No skills tracked yet</div>
+                    <div class="empty-state-text">Add skills manually, upload a resume, or take a test to start tracking your skills.</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if skills %}
+<script>
+new Chart(document.getElementById('skillsChart'), {
+    type: 'bar',
+    data: {
+        labels: [{% for s in skills %}"{{ s.skill_name }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Skill Score',
+            data: [{% for s in skills %}{{ s.skill_score }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                '#7C3AED', '#2563EB', '#06B6D4', '#8B5CF6', '#4F46E5',
+                '#10B981', '#F59E0B', '#EF4444', '#7C3AED', '#2563EB'
+            ],
+            borderRadius: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, max: 100, grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } },
+            y: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

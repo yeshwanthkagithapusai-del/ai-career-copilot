@@ -1,0 +1,127 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}{{ pt.phase_name }} Training Quiz - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Phase <span class="gradient-text">Training Quiz</span></h1>
+<p class="page-subtitle">{{ pt.phase_name }} &mdash; Attempt #{{ pt.attempt }}</p>
+
+<!-- Quiz Info Bar -->
+<div class="glass-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex gap-4">
+            <div>
+                <div class="text-muted-custom" style="font-size: 12px;">Roadmap</div>
+                <div style="font-size: 14px; font-weight: 600;">{{ pt.roadmap.target_career }}</div>
+            </div>
+            <div>
+                <div class="text-muted-custom" style="font-size: 12px;">Questions</div>
+                <div style="font-size: 14px; font-weight: 600;">{{ answers|length }}</div>
+            </div>
+            <div>
+                <div class="text-muted-custom" style="font-size: 12px;">Difficulty</div>
+                <div style="font-size: 14px; font-weight: 600;">{{ test.difficulty|capfirst }}</div>
+            </div>
+        </div>
+        <!-- Timer -->
+        <div style="font-size: 22px; font-weight: 700;" class="gradient-text" id="timer">00:00</div>
+    </div>
+</div>
+
+<!-- Questions -->
+<form id="quiz-form">
+    {% csrf_token %}
+    {% for answer in answers %}
+    <div class="glass-card p-4 mb-3" id="q-{{ answer.id }}">
+        <div class="d-flex gap-3 mb-3">
+            <div class="question-number" style="min-width: 36px; height: 36px; font-size: 14px;">{{ forloop.counter }}</div>
+            <p style="font-size: 16px; font-weight: 500; line-height: 1.6; margin: 0; padding-top: 6px;">{{ answer.question }}</p>
+        </div>
+        <div class="options-container ps-5">
+            {% for option in answer.options %}
+            <label class="option-label" style="display: flex; align-items: center; gap: 10px;
+                   padding: 10px 14px; margin-bottom: 8px; border-radius: 10px;
+                   border: 1px solid rgba(255,255,255,0.08); cursor: pointer;
+                   transition: all 0.2s; background: rgba(255,255,255,0.02);"
+                   onmouseover="this.style.background='rgba(139,92,246,0.08)'"
+                   onmouseout="if(!this.querySelector('input').checked) this.style.background='rgba(255,255,255,0.02)'">
+                <input type="radio" name="answer_{{ answer.id }}" value="{{ forloop.counter0 }}"
+                       style="accent-color: #8b5cf6; width: 16px; height: 16px;"
+                       onchange="highlightSelected(this)">
+                <span style="font-size: 15px;">{{ option }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="glass-card p-4 text-center">
+        <button type="button" id="submit-btn" class="btn-primary-custom btn-shine"
+                style="min-width: 220px; font-size: 16px; padding: 14px 32px;"
+                onclick="submitQuiz()">
+            <i class="fas fa-paper-plane"></i> Submit Training Quiz
+        </button>
+    </div>
+</form>
+
+<script>
+// Timer
+let seconds = 0;
+const timerEl = document.getElementById('timer');
+const timerInterval = setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    timerEl.textContent = `${m}:${s}`;
+}, 1000);
+
+// Highlight selected option
+function highlightSelected(radio) {
+    const name = radio.name;
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+        r.closest('label').style.background = 'rgba(255,255,255,0.02)';
+        r.closest('label').style.borderColor = 'rgba(255,255,255,0.08)';
+    });
+    radio.closest('label').style.background = 'rgba(139,92,246,0.15)';
+    radio.closest('label').style.borderColor = 'rgba(139,92,246,0.4)';
+}
+
+function submitQuiz() {
+    clearInterval(timerInterval);
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
+
+    const answers = {};
+    document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+        const answerId = r.name.replace('answer_', '');
+        answers[answerId] = parseInt(r.value);
+    });
+
+    fetch('{% url "roadmaps:submit_phase_training" pt.id %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ answers, time_taken: seconds }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Training Quiz';
+            alert('Submission failed. Please try again.');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Training Quiz';
+        alert('Network error. Please try again.');
+    });
+}
+</script>
+{% endblock %}

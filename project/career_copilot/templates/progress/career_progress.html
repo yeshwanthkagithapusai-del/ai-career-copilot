@@ -1,0 +1,170 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Career Progress - AI Career Copilot{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/progress.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="career-progress-page">
+    <div class="page-top">
+        <div>
+            <h1 class="page-title">Career <span class="gradient-text">Progress</span></h1>
+            <p class="page-subtitle">Track your career development with live charts, timeline updates, and progress summaries.</p>
+        </div>
+    </div>
+
+    <div class="glass-panel progress-filters">
+        <div class="filter-group">
+            <span class="filter-label">View:</span>
+            <button class="filter-btn active" data-filter="all">All Time</button>
+            <button class="filter-btn" data-filter="7d">Last 7 Days</button>
+            <button class="filter-btn" data-filter="30d">Last 30 Days</button>
+            <button class="filter-btn" data-filter="3m">Last 3 Months</button>
+        </div>
+        <div class="summary-pill">
+            {{ total_records|default:0 }} records tracked
+        </div>
+    </div>
+
+    <div class="progress-message" id="progressBanner" role="status" aria-live="polite"></div>
+
+    <div class="summary-grid glass-panel">
+        <article class="stat-card">
+            <span class="stat-label">Total Records</span>
+            <strong class="stat-value">{{ total_records|default:0 }}</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">ATS Entries</span>
+            <strong class="stat-value">{{ metric_counts.ats_score|default:0 }}</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Interview Entries</span>
+            <strong class="stat-value">{{ metric_counts.interview_score|default:0 }}</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Test Entries</span>
+            <strong class="stat-value">{{ metric_counts.test_score|default:0 }}</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Roadmap Updates</span>
+            <strong class="stat-value">{{ metric_counts.roadmap_progress|default:0 }}</strong>
+        </article>
+    </div>
+
+    <div class="progress-grid">
+        <article class="progress-card card-full" id="overallCard">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-chart-line"></i> Overall Career Progress</div>
+                <span class="card-meta">Live overview of your career metrics</span>
+            </div>
+            <div class="chart-shell">
+                <canvas id="overallChart" aria-label="Overall career progress chart"></canvas>
+                <div class="loading-overlay" id="progressLoader">
+                    <div class="loading-bar"></div>
+                </div>
+            </div>
+        </article>
+
+        <article class="progress-card card-md" id="atsCard">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-file-alt"></i> ATS History</div>
+                <span class="card-meta">Resume ATS score over time</span>
+            </div>
+            <div class="chart-shell">
+                <canvas id="atsChart" aria-label="Resume ATS history chart"></canvas>
+            </div>
+        </article>
+
+        <article class="progress-card card-md" id="interviewCard">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-comments"></i> Interview Performance</div>
+                <span class="card-meta">Interview score trends</span>
+            </div>
+            <div class="chart-shell">
+                <canvas id="interviewChart" aria-label="Interview performance chart"></canvas>
+            </div>
+        </article>
+
+        <article class="progress-card card-md" id="technicalCard">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-laptop-code"></i> Technical Skills</div>
+                <span class="card-meta">Technical score trends</span>
+            </div>
+            <div class="chart-shell">
+                <canvas id="technicalChart" aria-label="Technical skills chart"></canvas>
+            </div>
+        </article>
+
+        <article class="progress-card card-md" id="communicationCard">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-comments-alt"></i> Communication Skills</div>
+                <span class="card-meta">Communication score trends</span>
+            </div>
+            <div class="chart-shell">
+                <canvas id="communicationChart" aria-label="Communication skills chart"></canvas>
+            </div>
+        </article>
+
+        <article class="progress-card card-md" id="roadmapCard">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-map-marked-alt"></i> Roadmap Progress</div>
+                <span class="card-meta">Course roadmap completion</span>
+            </div>
+            <div class="chart-shell">
+                <canvas id="roadmapChart" aria-label="Roadmap progress chart"></canvas>
+            </div>
+        </article>
+
+        <article class="progress-card timeline-card">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-history"></i> Recent Activity</div>
+                <span class="card-meta">Latest updates and score changes</span>
+            </div>
+            <div class="timeline-list" id="activityTimeline">
+                <div class="empty-card">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                    <p>Loading recent activity...</p>
+                </div>
+            </div>
+        </article>
+
+        {% if ai_summary %}
+        <article class="progress-card card-full">
+            <div class="card-header">
+                <div class="title"><i class="fas fa-robot"></i> AI Progress Summary</div>
+                <span class="card-meta">Smart recommendations for your next step</span>
+            </div>
+            <div class="ai-summary-grid">
+                <div class="ai-summary-item">
+                    <h4>Summary</h4>
+                    <p>{{ ai_summary.summary }}</p>
+                </div>
+                <div class="ai-summary-item">
+                    <h4>Achievements</h4>
+                    <ul>
+                        {% for achievement in ai_summary.achievements %}
+                            <li>{{ achievement }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="ai-summary-item">
+                    <h4>Recommendations</h4>
+                    <ul>
+                        {% for recommendation in ai_summary.recommendations %}
+                            <li>{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </article>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/progress.js' %}"></script>
+{% endblock %}

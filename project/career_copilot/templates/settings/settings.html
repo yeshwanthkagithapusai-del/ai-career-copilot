@@ -1,0 +1,77 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Settings - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Settings</h1>
+<p class="page-subtitle">Manage your account preferences</p>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4 mb-4">
+            <h3 class="section-title"><i class="fas fa-user gradient-text"></i> Account Information</h3>
+            <div class="mb-3">
+                <div class="text-muted-custom" style="font-size: 13px;">Email</div>
+                <div style="font-size: 15px; font-weight: 600;">{{ user.email }}</div>
+            </div>
+            <div class="mb-3">
+                <div class="text-muted-custom" style="font-size: 13px;">Member Since</div>
+                <div style="font-size: 15px;">{{ user.date_joined|date:"F j, Y" }}</div>
+            </div>
+            <div class="mb-3">
+                <div class="text-muted-custom" style="font-size: 13px;">Last Login</div>
+                <div style="font-size: 15px;">{{ user.last_login|date:"F j, Y H:i"|default:"First login" }}</div>
+            </div>
+            <a href="{% url 'accounts:profile' %}" class="btn-secondary-custom">
+                <i class="fas fa-edit"></i> Edit Profile
+            </a>
+        </div>
+        
+        <div class="glass-card p-4 mb-4">
+            <h3 class="section-title"><i class="fas fa-key gradient-text"></i> Password</h3>
+            <p class="text-secondary-custom mb-3" style="font-size: 14px;">Change your account password to keep your account secure.</p>
+            <a href="{% url 'accounts:password_reset' %}" class="btn-secondary-custom">
+                <i class="fas fa-key"></i> Change Password
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="glass-card p-4 mb-4">
+            <h3 class="section-title"><i class="fas fa-bell gradient-text"></i> Notifications</h3>
+            <p class="text-secondary-custom mb-3" style="font-size: 14px;">Manage how you receive notifications about your career progress.</p>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" checked> Email notifications for new suggestions
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" checked> Progress milestone alerts
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" checked> Interview and test reminders
+                </label>
+            </div>
+        </div>
+        
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-shield-alt gradient-text"></i> Privacy & Security</h3>
+            <p class="text-secondary-custom mb-3" style="font-size: 14px;">Your data is private and isolated to your account. Other users cannot access your information.</p>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" checked> Keep my data private
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox"> Allow AI to use my activity data for personalized suggestions
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

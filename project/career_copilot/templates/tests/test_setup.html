@@ -1,0 +1,85 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Test Center - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Test <span class="gradient-text">Center</span></h1>
+<p class="page-subtitle">Take AI-generated assessments to identify your strong and weak areas</p>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-laptop-code gradient-text"></i> Test Setup</h3>
+            <form method="post" action="{% url 'assessments:start_test' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">Skill</label>
+                    <select name="skill" class="form-input" required>
+                        {% for skill in skills %}
+                            <option value="{{ skill }}">{{ skill }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Difficulty</label>
+                            <select name="difficulty" class="form-input">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate" selected>Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Number of Questions</label>
+                            <select name="num_questions" class="form-input">
+                                <option value="5">5 Questions</option>
+                                <option value="10" selected>10 Questions</option>
+                                <option value="15">15 Questions</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary-custom btn-shine w-100">
+                    <i class="fas fa-play"></i> Start Test
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-lg-5">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-history gradient-text"></i> Recent Tests</h3>
+            {% if tests %}
+                {% for test in tests %}
+                    <div class="suggestion-card">
+                        <div class="suggestion-icon" style="background: {% if test.score >= 70 %}rgba(16,185,129,0.15){% elif test.score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if test.score >= 70 %}var(--success){% elif test.score >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+                            {{ test.score }}%
+                        </div>
+                        <div class="flex-grow-1">
+                            <div style="font-weight: 600; font-size: 14px;">{{ test.skill }} - {{ test.score }}%</div>
+                            <div class="text-muted-custom" style="font-size: 12px;">
+                                {{ test.created_at|date:"M d, Y" }} | {{ test.correct_count }}/{{ test.num_questions }} correct
+                            </div>
+                            <a href="{% url 'assessments:test_analysis' test.id %}" style="font-size: 13px;">View Analysis <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                {% endfor %}
+                <a href="{% url 'assessments:test_history' %}" class="btn-secondary-custom w-100 mt-3">View All History</a>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-clipboard"></i></div>
+                    <div class="empty-state-title">No tests taken yet</div>
+                    <div class="empty-state-text">Complete your first assessment to identify your strong and weak areas.</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Resume ATS Analyzer - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Resume <span class="gradient-text">ATS Analyzer</span></h1>
+<p class="page-subtitle">Upload your resume for instant ATS scoring and AI-powered improvement suggestions</p>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-upload gradient-text"></i> Upload Resume</h3>
+            <form method="post" action="{% url 'resume_analyzer:upload_resume' %}" enctype="multipart/form-data" id="resume-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">Resume File (PDF or DOCX, max 10MB)</label>
+                    <input type="file" name="resume_file" class="form-input" accept=".pdf,.docx" required id="resume-file-input">
+                    <small class="text-muted-custom">Supported formats: .pdf, .docx</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Target Job Role (optional)</label>
+                    <input type="text" name="target_role" class="form-input" placeholder="e.g., Data Scientist">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Job Description (optional - improves keyword matching)</label>
+                    <textarea name="job_description" class="form-input" rows="5" placeholder="Paste the job description here for better keyword analysis..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary-custom btn-shine w-100" id="upload-btn">
+                    <i class="fas fa-magic"></i> Analyze Resume
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-history gradient-text"></i> Recent Analyses</h3>
+            {% if resumes %}
+                {% for resume in resumes %}
+                    <div class="suggestion-card">
+                        <div class="suggestion-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div style="font-weight: 600; font-size: 14px;">
+                                ATS Score: {{ resume.ats_score }}/100
+                            </div>
+                            <div class="text-muted-custom" style="font-size: 12px;">
+                                {{ resume.created_at|date:"M d, Y H:i" }}
+                                {% if resume.target_role %} - {{ resume.target_role }}{% endif %}
+                            </div>
+                            <a href="{% url 'resume_analyzer:ats_report' resume.id %}" class="mt-1 d-inline-block" style="font-size: 13px;">
+                                View Report <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+                <a href="{% url 'resume_analyzer:resume_history' %}" class="btn-secondary-custom w-100 mt-3">
+                    View All History
+                </a>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-file-upload"></i></div>
+                    <div class="empty-state-title">No resume analyzed yet</div>
+                    <div class="empty-state-text">Upload your resume to generate your ATS score and get personalized improvement suggestions.</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('resume-form')?.addEventListener('submit', function() {
+    document.getElementById('upload-btn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Analyzing...';
+    document.getElementById('upload-btn').disabled = true;
+});
+</script>
+{% endblock %}

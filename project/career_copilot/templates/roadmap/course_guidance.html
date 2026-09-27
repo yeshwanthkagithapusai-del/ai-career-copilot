@@ -1,0 +1,86 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Course Guidance - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Course <span class="gradient-text">Guidance</span></h1>
+<p class="page-subtitle">Personalized skill recommendations based on your career goal and current skills</p>
+
+<div class="glass-card p-4 mb-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <div class="text-muted-custom" style="font-size: 13px;">Career Goal</div>
+                <div style="font-size: 18px; font-weight: 600;">{{ career_goal|default:"Not set" }}</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <div class="text-muted-custom" style="font-size: 13px;">Current Skills</div>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    {% if current_skills %}
+                        {% for skill in current_skills %}
+                            <span class="skill-tag" style="font-size: 12px;">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted-custom" style="font-size: 14px;">No skills detected yet</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if guidance %}
+<h3 class="section-title"><i class="fas fa-graduation-cap gradient-text"></i> Recommended Skills to Learn</h3>
+
+<div class="row g-4">
+    {% for item in guidance %}
+    <div class="col-md-6">
+        <div class="glass-card p-4 card-hover">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h4 style="font-size: 20px; font-weight: 700;">{{ item.name }}</h4>
+                <div class="d-flex gap-2">
+                    <span class="badge-custom badge-{{ item.priority|lower }}">{{ item.priority }}</span>
+                    <span class="badge-custom badge-{{ item.difficulty|lower }}">{{ item.difficulty }}</span>
+                </div>
+            </div>
+            
+            <p class="text-secondary-custom mb-3" style="font-size: 14px;">{{ item.why }}</p>
+            
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="text-muted-custom" style="font-size: 12px;">Duration</div>
+                    <div style="font-size: 14px; font-weight: 600;">{{ item.duration }}</div>
+                </div>
+            </div>
+            
+            <div class="suggestion-card" style="margin: 0; background: rgba(139,92,246,0.05);">
+                <div class="suggestion-icon"><i class="fas fa-project-diagram"></i></div>
+                <div class="suggestion-text"><strong>Suggested Project:</strong> {{ item.project }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="glass-card p-4">
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-compass"></i></div>
+        <div class="empty-state-title">No guidance available</div>
+        <div class="empty-state-text">Set your career goal in your profile and add skills to get personalized course recommendations.</div>
+        <a href="{% url 'accounts:profile' %}" class="btn-primary-custom">
+            <i class="fas fa-user-edit"></i> Update Profile
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4-custom">
+    <a href="{% url 'roadmaps:roadmap' %}" class="btn-primary-custom">
+        <i class="fas fa-map-marked-alt"></i> Generate Full Roadmap
+    </a>
+</div>
+{% endblock %}

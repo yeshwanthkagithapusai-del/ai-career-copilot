@@ -1,0 +1,78 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Test History{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Test <span class="gradient-text">History</span></h1>
+<p class="page-subtitle">All your assessment results over time</p>
+
+{% if tests %}
+<div class="glass-card p-4 mb-4">
+    <div class="chart-container mb-3">
+        <canvas id="testHistoryChart"></canvas>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    {% for test in tests %}
+        <div class="suggestion-card">
+            <div class="suggestion-icon" style="background: {% if test.score >= 70 %}rgba(16,185,129,0.15){% elif test.score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if test.score >= 70 %}var(--success){% elif test.score >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+                {{ test.score }}%
+            </div>
+            <div class="flex-grow-1">
+                <div style="font-weight: 600;">{{ test.skill }} - {{ test.score }}%</div>
+                <div class="text-muted-custom" style="font-size: 13px;">
+                    {{ test.created_at|date:"M d, Y" }} | {{ test.correct_count }}/{{ test.num_questions }} correct | {{ test.get_difficulty_display|default:test.difficulty }}
+                </div>
+                <a href="{% url 'assessments:test_analysis' test.id %}" style="font-size: 13px;">View Analysis <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card p-4">
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-clipboard"></i></div>
+        <div class="empty-state-title">No tests taken yet</div>
+        <div class="empty-state-text">Complete your first assessment to start tracking your progress.</div>
+        <a href="{% url 'assessments:test_setup' %}" class="btn-primary-custom">
+            <i class="fas fa-play"></i> Take a Test
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<script>
+{% if tests %}
+const testScores = [{% for t in tests reversed %}{{ t.score }},{% endfor %}];
+const testLabels = [{% for t in tests reversed %}"{{ t.created_at|date:'M d' }}",{% endfor %}];
+
+new Chart(document.getElementById('testHistoryChart'), {
+    type: 'line',
+    data: {
+        labels: testLabels,
+        datasets: [{
+            label: 'Test Score',
+            data: testScores,
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37,99,235,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#2563EB',
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94A3B8' } } },
+        scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } },
+            x: { grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

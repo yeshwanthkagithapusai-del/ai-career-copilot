@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - AI Career Copilot{% endblock %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block body %}
+<div id="three-scene-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
+
+<div class="login-container">
+    <div class="login-card animate-scale-in">
+        <div class="text-center mb-4">
+            <div class="sidebar-logo mx-auto mb-3" style="width: 56px; height: 56px; font-size: 28px;"><i class="fas fa-robot"></i></div>
+            <h1 class="login-title">AI Career Copilot</h1>
+            <p class="login-subtitle">Sign in to continue your career journey</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-custom alert-{{ message.tags|default:'info' }}-custom" data-auto-dismiss>
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="username" class="form-input input-glow" placeholder="you@example.com" required autofocus autocomplete="email">
+            </div>
+            
+            <div class="form-group" style="position: relative;">
+                <label class="form-label">Password</label>
+                <div style="position: relative;">
+                    <input type="password" name="password" id="password-field" class="form-input input-glow" placeholder="Password" required autocomplete="current-password" style="padding-right: 44px;">
+                    <button type="button" class="password-toggle-btn" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="password-icon"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <label class="custom-checkbox">
+                    <input type="checkbox" name="remember"> Remember me
+                </label>
+                <a href="{% url 'accounts:password_reset' %}" style="font-size: 13px;">Forgot password?</a>
+            </div>
+            
+            {% if form.errors %}
+                <div class="alert-custom alert-error-custom mb-3">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Invalid email or password. Please try again.
+                </div>
+            {% endif %}
+            
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            
+            <button type="submit" class="btn-primary-custom btn-shine w-100" style="padding: 14px;">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </form>
+        
+        <div class="text-center mt-4">
+            <span class="text-secondary-custom">Don't have an account? </span>
+            <a href="{% url 'accounts:signup' %}">Sign up</a>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="{% url 'accounts:landing' %}" style="font-size: 13px; color: var(--text-muted);">
+                <i class="fas fa-arrow-left"></i> Back to home
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const field = document.getElementById('password-field');
+    const icon = document.getElementById('password-icon');
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/three-scene.js' %}"></script>
+<script>initThreeScene('three-scene-container');</script>
+{% endblock %}

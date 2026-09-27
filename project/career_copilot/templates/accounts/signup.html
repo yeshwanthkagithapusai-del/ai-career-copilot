@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - AI Career Copilot{% endblock %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block body %}
+<div id="three-scene-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
+
+<div class="login-container" style="padding: 40px 20px;">
+    <div class="login-card animate-scale-in" style="max-width: 560px;">
+        <div class="text-center mb-4">
+            <div class="sidebar-logo mx-auto mb-3" style="width: 56px; height: 56px; font-size: 28px;"><i class="fas fa-robot"></i></div>
+            <h1 class="login-title gradient-text">Create Your Account</h1>
+            <p class="login-subtitle">Start your AI-powered career development journey</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-custom alert-{{ message.tags|default:'info' }}-custom" data-auto-dismiss>
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if form.errors %}
+            <div class="alert-custom alert-error-custom mb-3">
+                <i class="fas fa-exclamation-circle"></i>
+                Please fix the errors below.
+            </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'accounts:signup' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" name="full_name" class="form-input input-glow" placeholder="John Doe" required autofocus autocomplete="name" value="{{ form.full_name.value|default:'' }}">
+                {% if form.full_name.errors %}<small class="text-error-custom">{{ form.full_name.errors|join:', ' }}</small>{% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email *</label>
+                <input type="email" name="email" class="form-input input-glow" placeholder="you@example.com" required autocomplete="email" value="{{ form.email.value|default:'' }}">
+                {% if form.email.errors %}<small class="text-error-custom">{{ form.email.errors|join:', ' }}</small>{% endif %}
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Password *</label>
+                        <div style="position: relative;">
+                            <input type="password" name="password1" id="password1" class="form-input input-glow" placeholder="Min 8 characters" required style="padding-right: 44px;">
+                            <button type="button" class="password-toggle-btn" onclick="togglePw('password1','pw1-icon')">
+                                <i class="fas fa-eye" id="pw1-icon"></i>
+                            </button>
+                        </div>
+                        {% if form.password1.errors %}<small class="text-error-custom">{{ form.password1.errors|join:', ' }}</small>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password *</label>
+                        <div style="position: relative;">
+                            <input type="password" name="password2" id="password2" class="form-input input-glow" placeholder="Repeat password" required style="padding-right: 44px;">
+                            <button type="button" class="password-toggle-btn" onclick="togglePw('password2','pw2-icon')">
+                                <i class="fas fa-eye" id="pw2-icon"></i>
+                            </button>
+                        </div>
+                        {% if form.password2.errors %}<small class="text-error-custom">{{ form.password2.errors|join:', ' }}</small>{% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <hr style="border-color: var(--border-color); margin: 24px 0;">
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">College Name</label>
+                        <input type="text" name="college" class="form-input input-glow" placeholder="Your college" value="{{ form.college.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Degree</label>
+                        <select name="degree" class="form-input input-glow">
+                            {% for value, label in form.degree.field.choices %}
+                                <option value="{{ value }}" {% if form.degree.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Branch</label>
+                        <input type="text" name="branch" class="form-input input-glow" placeholder="e.g., Computer Science" value="{{ form.branch.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Current Year</label>
+                        <select name="academic_year" class="form-input input-glow">
+                            {% for value, label in form.academic_year.field.choices %}
+                                <option value="{{ value }}" {% if form.academic_year.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Career Goal</label>
+                <input type="text" name="career_goal" class="form-input input-glow" placeholder="e.g., Data Scientist" value="{{ form.career_goal.value|default:'' }}">
+            </div>
+            
+            <button type="submit" class="btn-primary-custom btn-shine w-100" style="padding: 14px; margin-top: 8px;">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        </form>
+        
+        <div class="text-center mt-4">
+            <span class="text-secondary-custom">Already have an account? </span>
+            <a href="{% url 'accounts:login' %}">Sign in</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePw(id, iconId) {
+    const field = document.getElementById(id);
+    const icon = document.getElementById(iconId);
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/three-scene.js' %}"></script>
+<script>initThreeScene('three-scene-container');</script>
+{% endblock %}

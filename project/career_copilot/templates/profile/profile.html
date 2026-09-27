@@ -1,0 +1,118 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Profile - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">My <span class="gradient-text">Profile</span></h1>
+<p class="page-subtitle">View and update your career profile information</p>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="glass-card p-4 text-center">
+            <div class="profile-avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 40px;">
+                {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" alt="Profile">
+                {% else %}
+                    {{ profile.full_name|first|upper|default:user.email|first|upper }}
+                {% endif %}
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700;">{{ profile.full_name|default:user.email }}</h3>
+            <p class="text-muted-custom" style="font-size: 14px;">{{ user.email }}</p>
+            {% if profile.career_goal %}
+                <div class="skill-tag mt-2" style="font-size: 13px;">
+                    <i class="fas fa-bullseye"></i> {{ profile.career_goal }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="glass-card p-4">
+            <h3 class="section-title"><i class="fas fa-user-edit gradient-text"></i> Edit Profile</h3>
+            <div class="glass-card p-3 mb-4" style="background: rgba(139, 92, 246, 0.08); border: 1px solid var(--border-color);">
+                <h4 class="section-title" style="font-size: 16px; margin-bottom: 12px;"><i class="fas fa-shield-alt gradient-text"></i> Account Actions</h4>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'accounts:settings' %}" class="btn-secondary-custom" style="padding: 8px 14px; font-size: 13px;">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="{% url 'career_progress:career_progress' %}" class="btn-secondary-custom" style="padding: 8px 14px; font-size: 13px;">
+                        <i class="fas fa-chart-line"></i> My Progress
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="btn-secondary-custom" style="padding: 8px 14px; font-size: 13px; color: var(--error); border-color: rgba(239, 68, 68, 0.3);">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="full_name" class="form-input" value="{{ profile.full_name|default:'' }}">
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">College Name</label>
+                            <input type="text" name="college" class="form-input" value="{{ profile.college|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Degree</label>
+                            <select name="degree" class="form-input">
+                                {% for value, label in form.degree.field.choices %}
+                                    <option value="{{ value }}" {% if profile.degree == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Branch</label>
+                            <input type="text" name="branch" class="form-input" value="{{ profile.branch|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Current Year</label>
+                            <select name="academic_year" class="form-input">
+                                {% for value, label in form.academic_year.field.choices %}
+                                    <option value="{{ value }}" {% if profile.academic_year == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Career Goal</label>
+                    <input type="text" name="career_goal" class="form-input" value="{{ profile.career_goal|default:'' }}" placeholder="e.g., Data Scientist">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Profile Image</label>
+                    <input type="file" name="profile_image" class="form-input" accept="image/*">
+                    {% if profile.profile_image %}
+                        <small class="text-muted-custom">Current image will be replaced</small>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    <textarea name="bio" class="form-input" rows="3" placeholder="Tell us about yourself...">{{ profile.bio|default:'' }}</textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary-custom btn-shine">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

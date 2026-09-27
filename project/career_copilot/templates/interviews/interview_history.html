@@ -1,0 +1,78 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Interview History{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Interview <span class="gradient-text">History</span></h1>
+<p class="page-subtitle">All your mock interview results over time</p>
+
+{% if interviews %}
+<div class="glass-card p-4 mb-4">
+    <div class="chart-container mb-3">
+        <canvas id="interviewHistoryChart"></canvas>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    {% for interview in interviews %}
+        <div class="suggestion-card">
+            <div class="suggestion-icon" style="background: {% if interview.overall_score >= 70 %}rgba(16,185,129,0.15){% elif interview.overall_score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; color: {% if interview.overall_score >= 70 %}var(--success){% elif interview.overall_score >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+                {{ interview.overall_score }}
+            </div>
+            <div class="flex-grow-1">
+                <div style="font-weight: 600;">{{ interview.get_interview_type_display }} - {{ interview.target_role }}</div>
+                <div class="text-muted-custom" style="font-size: 13px;">
+                    {{ interview.created_at|date:"M d, Y" }} | Tech: {{ interview.technical_score }} | Comm: {{ interview.communication_score }}
+                </div>
+                <a href="{% url 'interviews:interview_report' interview.id %}" style="font-size: 13px;">View Report <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="glass-card p-4">
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-comments"></i></div>
+        <div class="empty-state-title">No interviews yet</div>
+        <div class="empty-state-text">Complete your first mock interview to start tracking your performance.</div>
+        <a href="{% url 'interviews:interview_setup' %}" class="btn-primary-custom">
+            <i class="fas fa-play"></i> Start Interview
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<script>
+{% if interviews %}
+const interviewData = [{% for i in interviews reversed %}{{ i.overall_score }},{% endfor %}];
+const interviewLabels = [{% for i in interviews reversed %}"{{ i.created_at|date:'M d' }}",{% endfor %}];
+
+new Chart(document.getElementById('interviewHistoryChart'), {
+    type: 'line',
+    data: {
+        labels: interviewLabels,
+        datasets: [{
+            label: 'Interview Score',
+            data: interviewData,
+            borderColor: '#06B6D4',
+            backgroundColor: 'rgba(6,182,212,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#06B6D4',
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#94A3B8' } } },
+        scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } },
+            x: { grid: { color: 'rgba(139,92,246,0.1)' }, ticks: { color: '#64748B' } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

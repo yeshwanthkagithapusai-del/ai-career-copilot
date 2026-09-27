@@ -1,0 +1,196 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}Training Result — {{ pt.phase_name }} - AI Career Copilot{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Training <span class="gradient-text">Result</span></h1>
+<p class="page-subtitle">{{ pt.phase_name }} &mdash; Attempt #{{ pt.attempt }}</p>
+
+<!-- Score Card -->
+<div class="glass-card p-4 mb-4 text-center">
+    <div style="font-size: 72px; font-weight: 900;"
+         class="{% if pt.passed %}gradient-text{% else %}{% endif %}"
+         style="color: {% if pt.passed %}inherit{% else %}#f59e0b{% endif %};">
+        {{ pt.score }}%
+    </div>
+    <div style="font-size: 22px; font-weight: 700; margin-top: 4px;">
+        {% if pt.passed %}
+        <span style="color: #10b981;"><i class="fas fa-check-circle"></i> Passed!</span>
+        {% else %}
+        <span style="color: #f59e0b;"><i class="fas fa-exclamation-circle"></i> Needs More Practice</span>
+        {% endif %}
+    </div>
+    <p class="text-muted-custom mt-2" style="font-size: 14px;">
+        {% if pt.passed %}
+        Great work! You scored {{ pt.score }}% — you have a solid grasp of {{ pt.phase_name }}.
+        {% else %}
+        You scored {{ pt.score }}%. A score of 70% or above is needed to pass. Review the weak topics and try again!
+        {% endif %}
+    </p>
+
+    <!-- Score Progress Bar -->
+    <div class="progress-bar-container mt-3" style="height: 14px; max-width: 420px; margin: 0 auto;">
+        <div style="height: 100%; width: {{ pt.score }}%; border-radius: 9999px;
+             background: {% if pt.passed %}linear-gradient(90deg,#10b981,#06b6d4){% else %}linear-gradient(90deg,#f59e0b,#ef4444){% endif %};
+             transition: width 0.7s ease;"></div>
+    </div>
+    <div class="d-flex justify-content-between mt-1" style="max-width: 420px; margin: 0 auto; font-size: 12px; color: var(--text-muted);">
+        <span>0%</span><span style="color:#f59e0b;">70% pass mark</span><span>100%</span>
+    </div>
+</div>
+
+<!-- Stats Row -->
+{% if pt.test %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="glass-card p-3 text-center">
+            <div style="font-size: 28px; font-weight: 800; color: #10b981;">{{ pt.test.correct_count }}</div>
+            <div class="text-muted-custom" style="font-size: 13px;">Correct</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card p-3 text-center">
+            <div style="font-size: 28px; font-weight: 800; color: #ef4444;">{{ pt.test.wrong_count }}</div>
+            <div class="text-muted-custom" style="font-size: 13px;">Wrong</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card p-3 text-center">
+            <div style="font-size: 28px; font-weight: 800;" class="gradient-text">{{ pt.test.num_questions }}</div>
+            <div class="text-muted-custom" style="font-size: 13px;">Total Questions</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card p-3 text-center">
+            <div style="font-size: 28px; font-weight: 800; color: #06b6d4;">
+                {% if pt.test.time_taken %}
+                    {% with mins=pt.test.time_taken|divisibleby:60 %}{{ pt.test.time_taken|floatformat:0 }}s{% endwith %}
+                {% else %}—{% endif %}
+            </div>
+            <div class="text-muted-custom" style="font-size: 13px;">Time Taken</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Topic Performance -->
+{% if topic_performance %}
+<div class="glass-card p-4 mb-4">
+    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+        <i class="fas fa-chart-bar gradient-text"></i> Topic Breakdown
+    </h3>
+    <div class="d-flex flex-column gap-3">
+        {% for topic, stats in topic_performance.items %}
+        <div>
+            <div class="d-flex justify-content-between mb-1">
+                <span style="font-size: 14px; font-weight: 600;">{{ topic }}</span>
+                <span style="font-size: 13px; color: {% if stats.accuracy >= 70 %}#10b981{% else %}#f59e0b{% endif %}; font-weight: 600;">
+                    {{ stats.accuracy }}%
+                    ({{ stats.correct }}/{{ stats.total }})
+                </span>
+            </div>
+            <div class="progress-bar-container" style="height: 8px; background: rgba(255,255,255,0.05);">
+                <div style="height: 100%; width: {{ stats.accuracy }}%; border-radius: 9999px;
+                     background: {% if stats.accuracy >= 70 %}linear-gradient(90deg,#10b981,#06b6d4){% else %}linear-gradient(90deg,#f59e0b,#ef4444){% endif %};
+                     transition: width 0.5s ease;"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Strong / Weak Topics -->
+<div class="row g-3 mb-4">
+    {% if strong_topics %}
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h4 style="font-size: 16px; font-weight: 700; color: #10b981; margin-bottom: 12px;">
+                <i class="fas fa-thumbs-up"></i> Strong Topics
+            </h4>
+            <div class="d-flex flex-wrap gap-2">
+                {% for t in strong_topics %}
+                <span class="skill-tag" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #10b981;">{{ t }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if weak_topics %}
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h4 style="font-size: 16px; font-weight: 700; color: #f59e0b; margin-bottom: 12px;">
+                <i class="fas fa-exclamation-triangle"></i> Topics to Review
+            </h4>
+            <div class="d-flex flex-wrap gap-2">
+                {% for t in weak_topics %}
+                <span class="skill-tag" style="background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: #f59e0b;">{{ t }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Q&A Review -->
+{% if answers %}
+<div class="glass-card p-4 mb-4">
+    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+        <i class="fas fa-list-ul gradient-text"></i> Question Review
+    </h3>
+    {% for answer in answers %}
+    <div style="padding: 14px; margin-bottom: 10px; border-radius: 12px;
+         background: {% if answer.is_correct %}rgba(16,185,129,0.06){% else %}rgba(239,68,68,0.06){% endif %};
+         border: 1px solid {% if answer.is_correct %}rgba(16,185,129,0.2){% else %}rgba(239,68,68,0.2){% endif %};">
+        <div class="d-flex gap-2 align-items-start">
+            <i class="fas fa-{% if answer.is_correct %}check-circle{% else %}times-circle{% endif %} mt-1"
+               style="color: {% if answer.is_correct %}#10b981{% else %}#ef4444{% endif %}; font-size: 16px; flex-shrink: 0;"></i>
+            <div style="flex: 1;">
+                <p style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">{{ forloop.counter }}. {{ answer.question }}</p>
+                {% if not answer.is_correct %}
+                <div style="font-size: 13px; color: #ef4444; margin-bottom: 4px;">
+                    Your answer: {% if answer.selected_answer >= 0 %}{{ answer.options|slice:answer.selected_answer }}{% else %}Not answered{% endif %}
+                </div>
+                {% endif %}
+                <div style="font-size: 13px; color: #10b981;">
+                    Correct: {{ answer.options|slice:answer.correct_answer }}
+                </div>
+            </div>
+            <span class="badge-custom" style="font-size: 11px; flex-shrink: 0;
+                background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.2); color: var(--purple);">
+                {{ answer.topic }}
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="glass-card p-4">
+    <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <!-- Retake Quiz -->
+        <form method="post"
+              action="{% url 'roadmaps:start_phase_training' roadmap.id pt.phase_index %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-secondary-custom">
+                <i class="fas fa-redo"></i> Retake Quiz
+            </button>
+        </form>
+
+        <!-- Back to Roadmap -->
+        <a href="{% url 'roadmaps:roadmap' %}" class="btn-primary-custom btn-shine">
+            <i class="fas fa-map-marked-alt"></i> Back to Roadmap
+        </a>
+
+        <!-- Next Phase (if not last) -->
+        {% if phase_data %}
+        <a href="{% url 'roadmaps:roadmap' %}#phase-{{ pt.phase_index|add:1 }}" class="btn-secondary-custom">
+            <i class="fas fa-arrow-right"></i> Next Phase
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
