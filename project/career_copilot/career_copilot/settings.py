@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'roadmaps',
     'career_progress',
     'ai_services',
+    'skills',
+    'careers',
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
