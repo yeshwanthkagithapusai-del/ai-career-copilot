@@ -88,7 +88,13 @@ class DashboardService:
         activities = activities[:5]
 
         # 6. Next Best Action (Deterministic)
-        next_action = DashboardService._determine_next_action(user, target_role, skill_gaps, latest_test)
+        from career_intelligence.recommendations import RecommendationEngine
+        nba = RecommendationEngine.get_next_best_action(user)
+        next_action = {
+            'title': nba.title,
+            'reason': nba.reason,
+            'url_name': nba.target_url
+        }
 
         # Prepare chart data
         chart_data = []
@@ -125,59 +131,4 @@ class DashboardService:
             'activities': activities,
             'next_action': next_action,
             'skill_gaps_json': chart_data
-        }
-        
-    @staticmethod
-    def _determine_next_action(user, target_role, skill_gaps, latest_test):
-        if not target_role:
-            return {
-                'title': 'Set your target career',
-                'reason': 'To unlock personalized career intelligence, you need to define your goal.',
-                'url_name': 'roadmaps:course_guidance'
-            }
-            
-        # Prioritize MISSING critical skills
-        missing = skill_gaps.get('MISSING', [])
-        critical_missing = [req for req in missing if req['priority'] == 'critical']
-        if critical_missing:
-            skill = critical_missing[0]['skill_name']
-            return {
-                'title': f'Learn {skill}',
-                'reason': f'{skill} is a critical requirement for your target role.',
-                'url_name': 'roadmaps:roadmap'
-            }
-            
-        # Then NEEDS_IMPROVEMENT critical skills
-        needs_improvement = skill_gaps.get('NEEDS_IMPROVEMENT', [])
-        critical_needs_imp = [item for item in needs_improvement if item['priority'] == 'critical']
-        if critical_needs_imp:
-            skill = critical_needs_imp[0]['skill_name']
-            return {
-                'title': f'Improve {skill}',
-                'reason': f'Your proficiency in {skill} is below the critical requirement for your role.',
-                'url_name': 'roadmaps:roadmap'
-            }
-            
-        # Suggest assessing a DEVELOPING skill
-        developing = skill_gaps.get('DEVELOPING', [])
-        if developing:
-            skill = developing[0]['skill_name']
-            return {
-                'title': f'Assess {skill}',
-                'reason': f'Validate your developing skills by taking a technical assessment.',
-                'url_name': 'assessments:test_setup'
-            }
-            
-        # If no gaps or no evidence at all
-        if not any([skill_gaps.get('STRONG'), skill_gaps.get('DEVELOPING'), skill_gaps.get('NEEDS_IMPROVEMENT'), skill_gaps.get('MISSING')]):
-            return {
-                'title': 'Upload your resume',
-                'reason': 'Start building your career intelligence profile by uploading a resume.',
-                'url_name': 'resume_analyzer:resume_analyzer'
-            }
-            
-        return {
-            'title': 'Practice Interviewing',
-            'reason': 'Your skills look strong. Start practicing your interview technique.',
-            'url_name': 'interviews:interview_setup'
         }
