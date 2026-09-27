@@ -142,10 +142,33 @@
 
         <div class="row g-3">
             <div class="col-md-6">
-                <div class="text-muted-custom mb-2" style="font-size: 13px; font-weight: 600;">Skills</div>
-                <div class="d-flex flex-wrap gap-1">
+                <div class="text-muted-custom mb-2" style="font-size: 13px; font-weight: 600;">Learning Priorities (Skills)</div>
+                <div class="d-flex flex-column gap-2">
                     {% for skill in phase.skills %}
-                        <span class="skill-tag" style="font-size: 12px;">{{ skill }}</span>
+                        {% with gap_info=skill_gaps_dict|get_skill_gap:skill %}
+                        <div class="skill-tag p-2" style="font-size: 12px; display: block; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-left: 3px solid {% if gap_info.priority == 'critical' %}var(--pink){% elif gap_info.priority == 'high' %}var(--cyan){% else %}rgba(255,255,255,0.3){% endif %};">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>{{ skill }}</strong>
+                                {% if gap_info %}
+                                    <span class="badge-custom" style="font-size: 10px; background: rgba(0,0,0,0.5); padding: 3px 6px;">
+                                        {{ gap_info.priority|title }} Priority
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if gap_info %}
+                                <div class="mt-1 text-muted-custom" style="font-size: 11px;">
+                                    <i class="fas fa-bullseye me-1 text-secondary"></i>
+                                    <strong>Why this matters:</strong> Your current proficiency is {{ gap_info.current_score|default:"Missing" }} 
+                                    {% if gap_info.required_proficiency %} 
+                                        (Target: {{ gap_info.required_proficiency }}).
+                                    {% else %}
+                                        (Target: Required).
+                                    {% endif %}
+                                    Closing this gap directly impacts your career readiness.
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endwith %}
                     {% endfor %}
                 </div>
             </div>

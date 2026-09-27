@@ -28,3 +28,10 @@ def index(sequence, position):
 def zip_lists(list_a, list_b):
     """Return a zipped list of (a, b) tuples for use in {% for %} loops."""
     return list(zip(list_a, list_b or []))
+
+@register.filter
+def get_skill_gap(gaps_dict, skill_name):
+    """Return gap dict for skill_name if found in gaps_dict."""
+    if not gaps_dict or not skill_name:
+        return None
+    return gaps_dict.get(skill_name.lower())

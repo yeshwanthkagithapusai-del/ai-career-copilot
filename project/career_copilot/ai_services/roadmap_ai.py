@@ -202,26 +202,36 @@ class RoadmapAIService:
     def __init__(self):
         self.ai = AIService()
     
-    def generate_roadmap(self, target_career, current_skills, experience_level, study_hours_per_week):
+    def generate_roadmap(self, target_career, current_skills, experience_level, study_hours_per_week, priorities=None):
         """
         Generate a personalized learning roadmap.
         """
         if self.ai.is_available:
-            ai_roadmap = self._generate_ai_roadmap(target_career, current_skills, experience_level, study_hours_per_week)
+            ai_roadmap = self._generate_ai_roadmap(target_career, current_skills, experience_level, study_hours_per_week, priorities)
             if ai_roadmap:
                 return ai_roadmap
         
         return self._get_template_roadmap(target_career, current_skills)
     
-    def _generate_ai_roadmap(self, target_career, current_skills, experience_level, study_hours_per_week):
+    def _generate_ai_roadmap(self, target_career, current_skills, experience_level, study_hours_per_week, priorities=None):
         """Generate roadmap using OpenAI."""
         skills_str = ', '.join(current_skills) if current_skills else 'None'
+        
+        priorities_prompt = ""
+        if priorities:
+            priority_lines = []
+            for p in priorities:
+                gap_val = p.get('gap')
+                gap_str = f" (Gap: {gap_val})" if gap_val else ""
+                priority_lines.append(f"- {p.get('skill_name')} (Priority: {p.get('priority')}){gap_str}")
+            priorities_str = "\n".join(priority_lines)
+            priorities_prompt = f"\nSkill Gaps (Prioritized Learning Focus):\n{priorities_str}\n\nEnsure these missing or weak skills are explicitly targeted in the generated roadmap phases."
         
         prompt = f"""Create a personalized learning roadmap for someone who wants to become a {target_career}.
 
 Current skills: {skills_str}
 Experience level: {experience_level}
-Available study time: {study_hours_per_week} hours per week
+Available study time: {study_hours_per_week} hours per week{priorities_prompt}
 
 Create a roadmap with 6-8 phases. Each phase should build on the previous one.
 

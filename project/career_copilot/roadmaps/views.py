@@ -80,6 +80,23 @@ def roadmap_view(request):
         # Convert to ordered list
         phase_training_list = [pt_map.get(i) for i in range(total_phases)]
 
+    # Fetch career intelligence gaps for UI context
+    skill_gaps_dict = {}
+    try:
+        from careers.models import UserCareerGoal
+        from career_intelligence.gap_analysis import calculate_skill_gaps
+        goal = UserCareerGoal.objects.filter(user=user).select_related('target_role').first()
+        if goal and goal.target_role:
+            gaps_data = calculate_skill_gaps(user, goal.target_role)
+            if gaps_data.get('status') == 'SUCCESS':
+                for category, gaps in gaps_data.get('gaps', {}).items():
+                    for gap in gaps:
+                        # Store by lowercase name for robust matching against phase skills
+                        skill_gaps_dict[gap['skill_name'].lower()] = gap
+    except Exception as e:
+        import logging
+        logging.getLogger('roadmaps').warning(f"Failed to fetch gaps for roadmap view: {e}")
+
     return render(request, 'roadmap/roadmap.html', {
         'roadmap': latest_roadmap,
         'roadmaps': roadmaps,
@@ -87,6 +104,7 @@ def roadmap_view(request):
         'career_goal': profile.career_goal if profile else '',
         'phase_training_list': phase_training_list,
         'show_new_form': show_new_form,
+        'skill_gaps_dict': skill_gaps_dict,
     })
 
 
@@ -116,8 +134,25 @@ def generate_roadmap(request):
     skills = Skill.objects.filter(user=user)
     current_skills = list(skills.values_list('skill_name', flat=True))
 
+    # Fetch career intelligence priorities if available
+    priorities = None
+    try:
+        from careers.models import UserCareerGoal
+        from career_intelligence.gap_analysis import calculate_skill_gaps
+        from roadmaps.services import RoadmapService
+        
+        goal = UserCareerGoal.objects.filter(user=user).select_related('target_role').first()
+        if goal and goal.target_role:
+            # Overwrite target_career with canonical if desired, or just use for context
+            target_career = goal.target_role.name
+            skill_gaps = calculate_skill_gaps(user, goal.target_role)
+            priorities = RoadmapService.determine_learning_priorities(skill_gaps)
+    except Exception as e:
+        import logging
+        logging.getLogger('roadmaps').warning(f"Failed to fetch priorities for roadmap: {e}")
+
     service = RoadmapAIService()
-    roadmap_data = service.generate_roadmap(target_career, current_skills, experience_level, study_hours)
+    roadmap_data = service.generate_roadmap(target_career, current_skills, experience_level, study_hours, priorities=priorities)
 
     if not roadmap_data:
         messages.error(request, "We couldn't generate a roadmap. Please try again.")
@@ -190,6 +225,30 @@ def update_phase_status(request, roadmap_id):
         score=roadmap.progress,
         previous_score=previous_score,
     )
+
+    if completed:
+        try:
+            from career_intelligence.services import SkillEvidenceService
+            phase_skills = []
+            phase_name = f"Phase {phase_index}"
+            if roadmap.roadmap_data and phase_index < len(roadmap.roadmap_data):
+                phase_data = roadmap.roadmap_data[phase_index]
+                phase_name = phase_data.get('phase', phase_name)
+                phase_skills = phase_data.get('skills', [])
+            
+            for skill_name in phase_skills:
+                SkillEvidenceService.record_skill_evidence(
+                    user=request.user,
+                    skill_name=skill_name,
+                    source_type='roadmap',
+                    source_reference=f"roadmap_manual:{roadmap.id}:{phase_index}",
+                    description=f"User manually marked roadmap phase as complete: {phase_name}",
+                    score=30,  # Weak score for manual checkoff
+                    confidence=30  # Low confidence
+                )
+        except Exception as e:
+            import logging
+            logging.getLogger('roadmaps').warning(f"Skill evidence extraction failed on manual complete: {e}")
 
     return JsonResponse({
         'success': True,
@@ -411,15 +470,24 @@ def submit_phase_training(request, pt_id):
     # Update canonical skills from roadmap phase training
     try:
         from career_intelligence.services import SkillEvidenceService
-        SkillEvidenceService.record_skill_evidence(
-            user=request.user,
-            skill_name=pt.phase_name,
-            source_type='roadmap',
-            source_reference=f"roadmap_training:{pt.id}",
-            description=f"Roadmap phase training completed: {pt.phase_name}",
-            score=score,
-            confidence=80
-        )
+        
+        # Extract target skills from roadmap data
+        phase_skills = [pt.phase_name] # fallback
+        if roadmap.roadmap_data and pt.phase_index < len(roadmap.roadmap_data):
+            phase_data = roadmap.roadmap_data[pt.phase_index]
+            if 'skills' in phase_data and phase_data['skills']:
+                phase_skills = phase_data['skills']
+
+        for skill_name in phase_skills:
+            SkillEvidenceService.record_skill_evidence(
+                user=request.user,
+                skill_name=skill_name,
+                source_type='roadmap',
+                source_reference=f"roadmap_training:{pt.id}",
+                description=f"Roadmap quiz passed with {score}%: {pt.phase_name}",
+                score=score,
+                confidence=80 if passed else 40
+            )
     except Exception as e:
         import logging
         logging.getLogger('roadmaps').warning(f"Skill evidence extraction failed: {e}")
