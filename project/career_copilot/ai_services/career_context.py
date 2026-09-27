@@ -88,6 +88,12 @@ class CareerContextService:
                 'date': latest_interview.created_at.strftime('%Y-%m-%d')
             }
 
+        # Projects
+        from projects.models import UserProject
+        active_projects = UserProject.objects.filter(user=user, status='in_progress')
+        if active_projects.exists():
+            context['active_projects'] = [up.project_template.title for up in active_projects]
+
         # Roadmap
         roadmap = Roadmap.objects.filter(user=user).first()
         if roadmap:
@@ -129,6 +135,10 @@ class CareerContextService:
         roadmap = context.get('roadmap_status')
         if roadmap:
             lines.append(f"\nROADMAP:\nTracking towards {roadmap['target_role']}")
+
+        active_projects = context.get('active_projects')
+        if active_projects:
+            lines.append(f"\nACTIVE PROJECTS:\n{', '.join(active_projects)}")
 
         nba = context.get('next_best_action')
         if nba:

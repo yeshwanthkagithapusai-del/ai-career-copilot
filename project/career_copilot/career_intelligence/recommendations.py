@@ -98,6 +98,41 @@ class RecommendationEngine:
                         target_url="roadmaps:roadmap"
                     )
 
+        # 4.5. Check Projects for a critical gap
+        if all_critical_gaps:
+            from projects.models import ProjectTemplate, UserProject
+            
+            # 1. Check for active projects addressing a gap
+            active_projects = UserProject.objects.filter(user=user, status='in_progress').select_related('project_template')
+            for up in active_projects:
+                p_skills = [s.name.lower() for s in up.project_template.skills_developed.all()]
+                if any(gap.lower() in p_skills for gap in all_critical_gaps):
+                    return Recommendation(
+                        action_type="PRACTICE",
+                        title=f"Continue project: {up.project_template.title}",
+                        reason=f"This project builds critical skills for {target_role.name}.",
+                        priority="HIGH",
+                        target_url="projects:project_list"
+                    )
+            
+            # 2. Recommend starting a new project if one exists for a gap
+            for gap in all_critical_gaps:
+                project = ProjectTemplate.objects.filter(
+                    target_roles=target_role,
+                    skills_developed__name__iexact=gap
+                ).first()
+                
+                if project:
+                    if not UserProject.objects.filter(user=user, project_template=project, status='completed').exists():
+                        return Recommendation(
+                            action_type="PRACTICE",
+                            title=f"Start project: {project.title}",
+                            reason=f"This project will help you build and demonstrate {gap}, a critical requirement for {target_role.name}.",
+                            priority="HIGH",
+                            skill_name=gap,
+                            target_url="projects:project_list"
+                        )
+
         # 5. Missing Critical Gaps
         if critical_missing:
             skill = critical_missing[0].get('skill_name')

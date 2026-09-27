@@ -21,6 +21,7 @@ urlpatterns = [
     path('assessments/', include('assessments.urls')),
     path('roadmaps/', include('roadmaps.urls')),
     path('progress/', include('career_progress.urls')),
+    path('projects/', include('projects.urls')),
     path('api/ai/', include('ai_services.urls')),
     re_path(r'^.+$', redirect_to_landing, name='fallback_redirect'),
 ]

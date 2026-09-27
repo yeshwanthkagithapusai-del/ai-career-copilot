@@ -1,0 +1,81 @@
+{% extends 'app_base.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }} - AI Career Copilot{% endblock %}
+
+{% block content %}
+<div class="container py-5 max-w-4xl">
+    <a href="{% url 'projects:project_list' %}" class="btn btn-sm btn-link text-secondary text-decoration-none px-0 mb-4">
+        <i class="fa-solid fa-arrow-left me-2"></i> Back to Projects
+    </a>
+
+    <div class="card border-0 shadow-sm glass-panel mb-5">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="badge bg-secondary mb-2">{{ project.get_difficulty_display }}</span>
+                {% if user_project %}
+                    {% if user_project.status == 'completed' %}
+                        <span class="badge bg-success bg-opacity-10 text-success fs-6 px-3 py-2"><i class="fa-solid fa-check me-2"></i> Completed</span>
+                    {% else %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2"><i class="fa-solid fa-person-digging me-2"></i> In Progress</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+            
+            <h1 class="display-5 fw-bold mb-4">{{ project.title }}</h1>
+            
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">Overview</h5>
+                <p class="text-secondary fs-5" style="white-space: pre-line;">{{ project.description }}</p>
+            </div>
+
+            <div class="card bg-light border-0 mb-5">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i> Skills Developed</h6>
+                    <p class="text-secondary small mb-3">Completing this project will generate verified skill evidence for:</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in skills_developed %}
+                            <span class="badge bg-white text-dark border px-3 py-2"><i class="fa-solid fa-check-circle text-success me-2"></i> {{ skill.name }}</span>
+                        {% empty %}
+                            <span class="text-secondary small">No specific skills tagged.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% if not user_project %}
+            <div class="text-center">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="start">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
+                        <i class="fa-solid fa-play me-2"></i> Start Project
+                    </button>
+                </form>
+            </div>
+            {% elif user_project.status == 'in_progress' %}
+            <div class="alert alert-primary border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold mb-1">Project in Progress</h6>
+                    <p class="mb-0 small opacity-75">Started on {{ user_project.started_at|date:"M j, Y" }}</p>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="complete">
+                    <button type="submit" class="btn btn-success fw-bold shadow-sm" onclick="return confirm('Are you sure you want to mark this project as completed? This will update your Career Intelligence profile.');">
+                        <i class="fa-solid fa-flag-checkered me-2"></i> Mark as Completed
+                    </button>
+                </form>
+            </div>
+            {% elif user_project.status == 'completed' %}
+            <div class="alert alert-success border-0 text-center">
+                <i class="fa-solid fa-award display-4 mb-3 text-success opacity-75"></i>
+                <h5 class="fw-bold">Project Completed!</h5>
+                <p class="mb-0 text-success opacity-75">Completed on {{ user_project.completed_at|date:"M j, Y" }}. Skill evidence has been recorded to your Career Profile.</p>
+                <a href="{% url 'dashboard:dashboard' %}" class="btn btn-outline-success mt-4">View Career Profile</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
