@@ -115,9 +115,53 @@
     </div>
 </div>
 
+<!-- Resume Intelligence: Structured Data -->
+{% if analysis.structured_data %}
+<div class="glass-card p-4 mt-4-custom">
+    <h3 class="section-title"><i class="fas fa-brain gradient-text"></i> Resume Intelligence (Structured Data)</h3>
+    <div class="row g-3">
+        {% for category, items in analysis.structured_data.items %}
+            {% if items %}
+            <div class="col-md-4">
+                <div class="text-muted-custom mb-1" style="font-size: 13px; font-weight: 600; text-transform: capitalize;">
+                    {{ category|cut:'_'|title }}
+                </div>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for item in items %}
+                        <span class="skill-tag" style="font-size: 11px;">{{ item }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="mt-3 text-muted-custom" style="font-size: 12px;">
+        <i class="fas fa-check-circle text-success-custom"></i> Verified skills extracted from these categories have been recorded as Career Evidence.
+    </div>
+</div>
+{% endif %}
+
 <!-- Suggestions -->
 <div class="glass-card p-4 mt-4-custom">
     <h3 class="section-title"><i class="fas fa-lightbulb gradient-text"></i> Improvement Suggestions</h3>
+    
+    {% if not analysis.has_target_career %}
+        <div class="alert alert-warning" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; font-size: 14px;">
+            <i class="fas fa-exclamation-triangle"></i> You have not set a Target Career Goal. Set one in your Profile to receive personalized skill gap analysis!
+        </div>
+    {% endif %}
+
+    {% if analysis.intelligence_recommendations %}
+        {% for suggestion in analysis.intelligence_recommendations %}
+            <div class="suggestion-card" style="border-left: 3px solid var(--cyan);">
+                <div class="suggestion-icon"><i class="fas fa-compass text-info"></i></div>
+                <div class="suggestion-text">{{ suggestion }}</div>
+            </div>
+        {% endfor %}
+        <hr style="border-color: var(--border-color); margin: 20px 0;">
+    {% endif %}
+    
+    <h4 style="font-size: 15px;" class="mb-3 text-muted-custom">Document Formatting</h4>
     {% for suggestion in analysis.suggestions %}
         <div class="suggestion-card">
             <div class="suggestion-icon"><i class="fas fa-arrow-right"></i></div>

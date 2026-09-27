@@ -97,13 +97,39 @@ def upload_resume(request):
         previous_score = previous_resumes.first().ats_score if previous_resumes.exists() else 0
         resume.previous_ats_score = previous_score
         
-        # Calculate ATS score
+        # Calculate ATS score (preserves existing scoring)
         analysis = service.calculate_ats_score(extracted_text, job_description, target_role)
         
         if 'error' in analysis:
             resume.delete()
             messages.error(request, analysis['error'])
             return redirect('resume_analyzer:resume_analyzer')
+            
+        # Add Resume Intelligence 2.0 (Structured extraction and Gap analysis)
+        try:
+            from resume_analyzer.services import ResumeIntelligenceService
+            from careers.models import UserCareerGoal
+            from career_intelligence.gap_analysis import calculate_skill_gaps
+            
+            intel_service = ResumeIntelligenceService()
+            structured_data = intel_service.extract_structured_data(extracted_text)
+            
+            # Fetch goal and gaps for recommendations
+            goal = UserCareerGoal.objects.filter(user=request.user).select_related('target_role').first()
+            target_role_obj = goal.target_role if goal else None
+            gaps_data = None
+            if target_role_obj:
+                gaps_data = calculate_skill_gaps(request.user, target_role_obj)
+            
+            recommendations = intel_service.generate_recommendations(analysis, target_role_obj, gaps_data)
+            
+            analysis['structured_data'] = structured_data
+            analysis['intelligence_recommendations'] = recommendations
+            analysis['has_target_career'] = bool(target_role_obj)
+            
+        except Exception as e:
+            import logging
+            logging.getLogger('resume_analyzer').warning(f"Resume intelligence failed: {e}")
         
         resume.ats_score = analysis['overall_score']
         resume.analysis_data = analysis
@@ -117,21 +143,43 @@ def upload_resume(request):
             previous_score=previous_score,
         )
         
-        # Update canonical skills from resume
+        # Update canonical skills from structured data
         try:
             from career_intelligence.services import SkillEvidenceService
-            skills_found = analysis.get('skills_found', [])
-            for skill_item in skills_found:
-                skill_name = skill_item.get('name') if isinstance(skill_item, dict) else skill_item
-                if not skill_name:
-                    continue
+            
+            # Collect skills from specific structured data categories (preventing junk generation)
+            structured_skills = []
+            if 'structured_data' in analysis:
+                sd = analysis['structured_data']
+                structured_skills.extend(sd.get('programming_languages', []))
+                structured_skills.extend(sd.get('frameworks', []))
+                structured_skills.extend(sd.get('databases', []))
+                structured_skills.extend(sd.get('tools', []))
+                structured_skills.extend(sd.get('cloud_technologies', []))
+            else:
+                # Fallback to old heuristic skills found
+                skills_found = analysis.get('skills_found', [])
+                for skill_item in skills_found:
+                    name = skill_item.get('name') if isinstance(skill_item, dict) else skill_item
+                    if name: structured_skills.append(name)
+            
+            # Remove empty/duplicates while preserving order
+            seen = set()
+            unique_skills = []
+            for s in structured_skills:
+                s_strip = s.strip()
+                if s_strip and s_strip.lower() not in seen:
+                    seen.add(s_strip.lower())
+                    unique_skills.append(s_strip)
+                    
+            for skill_name in unique_skills:
                 SkillEvidenceService.record_skill_evidence(
                     user=request.user,
                     skill_name=skill_name,
                     source_type='resume',
                     source_reference=f"resume:{resume.id}",
-                    description="Extracted from resume via ATS analysis.",
-                    score=50,
+                    description="Extracted from resume via Resume Intelligence 2.0.",
+                    score=50, # Baseline score for resume claim
                     confidence=70
                 )
         except Exception as e:
