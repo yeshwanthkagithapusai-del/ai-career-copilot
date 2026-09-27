@@ -98,6 +98,8 @@ def notifications_view(request):
         'id': n.id,
         'title': n.title,
         'message': n.message,
+        'type': n.notification_type,
+        'action_url': n.action_url,
         'is_read': n.is_read,
         'created_at': n.created_at.strftime('%b %d, %Y %H:%M'),
     } for n in notifications]

@@ -107,6 +107,22 @@ Do NOT invent new complex skills. Use standard canonical names (e.g. 'React', 'S
                 except Exception as e:
                     import logging
                     logging.getLogger('interviews').warning(f"Failed to record question skill evidence: {e}")
+
+        # Trigger notification
+        try:
+            from accounts.services import NotificationService
+            from django.urls import reverse
+            url = reverse('interviews:interview_history')
+            NotificationService.notify_milestone(
+                user=user,
+                event_name="Interview Analyzed",
+                detail=f"Your {interview_session.interview_type} interview analysis is complete.",
+                action_url=url,
+                ref_id=f"interview_completed_{interview_session.id}"
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger('interviews').error(f"Failed to generate interview notification: {e}")
                     
     def generate_next_practice_recommendation(self, interview_session, gaps_data: Dict = None) -> str:
         """Generate a deterministic recommendation based on weak points."""

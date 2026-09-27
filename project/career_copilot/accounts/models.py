@@ -65,8 +65,11 @@ class UserProfile(models.Model):
 class Notification(models.Model):
     """User notifications."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=50, default='SYSTEM')
     title = models.CharField(max_length=300)
     message = models.TextField()
+    action_url = models.CharField(max_length=500, blank=True, null=True)
+    reference_id = models.CharField(max_length=100, blank=True, null=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     

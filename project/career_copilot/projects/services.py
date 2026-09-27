@@ -89,6 +89,19 @@ class ProjectService:
             except Exception as e:
                 logger.error(f"Failed to record project evidence for {skill.name}: {e}")
                 # Re-raise to rollback transaction ensuring atomicity
-                raise e
-                
+        # Trigger notification
+        try:
+            from accounts.services import NotificationService
+            from django.urls import reverse
+            url = reverse('projects:project_list')
+            NotificationService.notify_milestone(
+                user=user,
+                event_name="Project Completed",
+                detail=f"You successfully completed the project '{template.title}' and earned new skill evidence.",
+                action_url=url,
+                ref_id=f"project_completed_{user_project.id}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to generate project notification: {e}")
+            
         return user_project

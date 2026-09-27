@@ -136,7 +136,27 @@
             <i class="fas fa-bars"></i>
         </button>
         
-        <div class="navbar-right">
+        <div class="navbar-right d-flex align-items-center">
+            <!-- Notification Bell -->
+            <div class="dropdown me-3">
+                <button class="btn btn-link text-white position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false" onclick="fetchNotifications()">
+                    <i class="fas fa-bell fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none; font-size: 0.65rem;">
+                        0
+                    </span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; background: var(--card-bg); border: 1px solid var(--border-color);">
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-secondary border-opacity-25">
+                        <h6 class="mb-0 fw-bold text-white">Notifications</h6>
+                        <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none" onclick="markAllNotificationsRead(event)">Mark all read</button>
+                    </div>
+                    <div id="notificationList" class="p-2">
+                        <!-- Notifications injected via JS -->
+                        <div class="text-center text-muted py-3 small">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
             <button class="profile-dropdown" id="profile-dropdown" type="button" aria-label="User profile">
                 <div class="profile-avatar">
                     {% if profile.profile_image %}
@@ -201,4 +221,98 @@
 </div>
 
 <script src="{% static 'js/chatbot.js' %}"></script>
+<script>
+// Notification UI Logic
+document.addEventListener('DOMContentLoaded', function() {
+    fetchNotifications();
+    setInterval(fetchNotifications, 60000); // Poll every 60s
+});
+
+function fetchNotifications() {
+    fetch('{% url "accounts:notifications" %}')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notificationBadge');
+            if (badge && data.unread_count > 0) {
+                badge.style.display = 'block';
+                badge.textContent = data.unread_count;
+            } else if (badge) {
+                badge.style.display = 'none';
+            }
+            
+            const list = document.getElementById('notificationList');
+            if (!list) return;
+
+            if (data.notifications.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted py-3 small">No notifications yet.</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            data.notifications.forEach(n => {
+                const bgClass = n.is_read ? '' : 'bg-primary bg-opacity-10';
+                const dot = n.is_read ? '' : '<span class="position-absolute top-0 start-0 p-1 bg-primary border border-light rounded-circle" style="margin-top: 12px; margin-left: 8px;"></span>';
+                const actionHref = n.action_url ? n.action_url : '#';
+                const cursor = n.action_url ? 'cursor: pointer;' : '';
+                
+                list.innerHTML += `
+                    <div class="position-relative p-2 rounded mb-1 ${bgClass}" style="${cursor}" onclick="readNotification(${n.id}, '${actionHref}')">
+                        ${dot}
+                        <div class="ps-3 pe-1">
+                            <div class="fw-bold text-white small">${n.title}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">${n.message}</div>
+                            <div class="text-muted mt-1" style="font-size: 0.65rem;">${n.created_at}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        })
+        .catch(err => console.error('Error fetching notifications:', err));
+}
+
+function readNotification(id, url) {
+    fetch(`/notifications/${id}/read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    }).then(() => {
+        if (url && url !== '#' && url !== 'None') {
+            window.location.href = url;
+        } else {
+            fetchNotifications();
+        }
+    });
+}
+
+function markAllNotificationsRead(e) {
+    e.stopPropagation();
+    fetch('{% url "accounts:mark_all_read" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    }).then(() => {
+        fetchNotifications();
+    });
+}
+
+// Utility for CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock %}
