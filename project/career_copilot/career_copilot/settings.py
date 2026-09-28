@@ -176,30 +176,31 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Security Hardening (active only in production when DEBUG=False)
+# Security Hardening (Configured explicitly via environment variables)
 # ─────────────────────────────────────────────────────────────────────────────
-if not DEBUG:
-    # Force HTTPS
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Force HTTPS (True in production)
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+# Trust Render/PaaS proxy headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-    # HSTS — tells browsers to only use HTTPS for 1 year
-    SECURE_HSTS_SECONDS = 31536000        # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+# HSTS — tells browsers to only use HTTPS for the given seconds (e.g. 31536000 for 1 year)
+# Configure this ONLY when HTTPS-only production deployment is established.
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', 0))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False').lower() == 'true'
+SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'False').lower() == 'true'
 
-    # Cookies only sent over HTTPS
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+# Cookies only sent over HTTPS (True in production)
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
 
-    # Prevent clickjacking
-    X_FRAME_OPTIONS = 'DENY'
+# Prevent clickjacking
+X_FRAME_OPTIONS = os.getenv('X_FRAME_OPTIONS', 'DENY')
 
-    # Prevent browsers from sniffing content-type
-    SECURE_CONTENT_TYPE_NOSNIFF = True
+# Prevent browsers from sniffing content-type
+SECURE_CONTENT_TYPE_NOSNIFF = os.getenv('SECURE_CONTENT_TYPE_NOSNIFF', 'True').lower() == 'true'
 
-    # Enable browser XSS filter
-    SECURE_BROWSER_XSS_FILTER = True
+# Enable browser XSS filter
+SECURE_BROWSER_XSS_FILTER = os.getenv('SECURE_BROWSER_XSS_FILTER', 'True').lower() == 'true'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OpenAI API

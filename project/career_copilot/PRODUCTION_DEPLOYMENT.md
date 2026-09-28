@@ -20,6 +20,12 @@ Before deploying, prepare the following environment variables. Do **NOT** commit
 - `DEBUG`: Must be `False` in production.
 - `ALLOWED_HOSTS`: Your production domain names separated by commas (e.g., `yourdomain.com,www.yourdomain.com,your-app.onrender.com`).
 - `CSRF_TRUSTED_ORIGINS`: Your production URLs separated by commas (e.g., `https://yourdomain.com,https://your-app.onrender.com`). **CRITICAL**: Include `https://` in these.
+- `SECURE_SSL_REDIRECT`: Set to `True` in production.
+- `SESSION_COOKIE_SECURE`: Set to `True` in production.
+- `CSRF_COOKIE_SECURE`: Set to `True` in production.
+- `SECURE_HSTS_SECONDS`: Set to `31536000` (1 year) ONLY AFTER HTTPS is fully established.
+- `SECURE_HSTS_INCLUDE_SUBDOMAINS`: Set to `True` in production.
+- `SECURE_HSTS_PRELOAD`: Set to `True` in production.
 
 ### Database
 - `DATABASE_URL`: Your PostgreSQL connection string (e.g., `postgresql://user:password@host:port/dbname`).
