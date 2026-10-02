@@ -6,7 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Roadmap, Skill, PhaseTraining
+from .models import Roadmap, PhaseTraining
+from skills.models import UserSkillProficiency
 from ai_services.roadmap_ai import RoadmapAIService
 from career_progress.models import CareerProgress
 
@@ -18,8 +19,8 @@ def course_guidance(request):
     profile = getattr(user, 'profile', None)
 
     # Get current skills
-    skills = Skill.objects.filter(user=user)
-    current_skills = list(skills.values_list('skill_name', flat=True))
+    skills = UserSkillProficiency.objects.filter(user=user)
+    current_skills = list(skills.values_list('skill__name', flat=True))
 
     # Get test performance data
     from assessments.models import Test
@@ -64,8 +65,8 @@ def roadmap_view(request):
 
     show_new_form = request.GET.get('new') == '1'
 
-    skills = Skill.objects.filter(user=user)
-    current_skills = list(skills.values_list('skill_name', flat=True))
+    skills = UserSkillProficiency.objects.filter(user=user)
+    current_skills = list(skills.values_list('skill__name', flat=True))
 
     # Build per-phase training data as an ordered list parallel to roadmap_data
     # Index = phase_index, value = latest PhaseTraining or None
@@ -131,8 +132,8 @@ def generate_roadmap(request):
         return redirect('/roadmaps/roadmap/?new=1')
 
     user = request.user
-    skills = Skill.objects.filter(user=user)
-    current_skills = list(skills.values_list('skill_name', flat=True))
+    skills = UserSkillProficiency.objects.filter(user=user)
+    current_skills = list(skills.values_list('skill__name', flat=True))
 
     # Fetch career intelligence priorities if available
     priorities = None
@@ -260,18 +261,12 @@ def update_phase_status(request, roadmap_id):
 @login_required
 def skills_view(request):
     """View and manage skills."""
-    skills = Skill.objects.filter(user=request.user).order_by('-skill_score')
+    skills = UserSkillProficiency.objects.select_related('skill').filter(user=request.user).order_by('-proficiency_score')
 
     if request.method == 'POST':
         skill_name = request.POST.get('skill_name', '').strip()
         if skill_name:
-            skill, created = Skill.objects.get_or_create(
-                user=request.user,
-                skill_name=skill_name,
-                defaults={'skill_score': 0, 'source': 'manual'}
-            )
-            
-            # Record in new canonical evidence system
+            # Record in canonical evidence system
             try:
                 from career_intelligence.services import SkillEvidenceService
                 SkillEvidenceService.record_skill_evidence(
@@ -281,14 +276,12 @@ def skills_view(request):
                     description="User manually claimed this skill.",
                     confidence=50
                 )
+                messages.success(request, f"Skill '{skill_name}' processed.")
             except Exception as e:
                 import logging
                 logging.getLogger('roadmaps').warning(f"Skill evidence extraction failed: {e}")
+                messages.error(request, "Failed to process skill.")
                 
-            if created:
-                messages.success(request, f"Skill '{skill_name}' added.")
-            else:
-                messages.info(request, f"Skill '{skill_name}' already exists.")
         return redirect('roadmaps:skills')
 
     return render(request, 'roadmap/skills.html', {'skills': skills})

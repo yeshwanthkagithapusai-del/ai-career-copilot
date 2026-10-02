@@ -82,3 +82,11 @@ class UserSkillProficiency(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.skill.name} ({self.proficiency_score}%)"
+
+    @property
+    def skill_name(self):
+        return self.skill.name
+
+    @property
+    def skill_score(self):
+        return self.proficiency_score

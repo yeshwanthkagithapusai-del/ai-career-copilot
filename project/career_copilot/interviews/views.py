@@ -47,8 +47,8 @@ def start_interview(request):
     
     # Get user skills for personalization
     # Get user skills for personalization
-    from roadmaps.models import Skill as RoadmapSkill
-    user_skills = list(RoadmapSkill.objects.filter(user=request.user).values_list('skill_name', flat=True))
+    from skills.models import UserSkillProficiency
+    user_skills = list(UserSkillProficiency.objects.filter(user=request.user).values_list('skill__name', flat=True))
     
     # Career Context for Intelligence 2.0
     from careers.models import UserCareerGoal

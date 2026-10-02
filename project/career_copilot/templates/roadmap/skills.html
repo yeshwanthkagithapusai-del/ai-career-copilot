@@ -36,14 +36,14 @@
                 {% for skill in skills %}
                     <div class="mb-3">
                         <div class="d-flex justify-content-between mb-1">
-                            <span style="font-size: 14px; font-weight: 600;">{{ skill.skill_name }}</span>
+                            <span style="font-size: 14px; font-weight: 600;">{{ skill.skill.name|default:skill.skill_name }}</span>
                             <div class="d-flex align-items-center gap-2">
-                                <span style="font-size: 14px; font-weight: 600;">{{ skill.skill_score }}</span>
-                                <span class="badge-custom badge-low" style="font-size: 10px;">{{ skill.source }}</span>
+                                <span style="font-size: 14px; font-weight: 600;">{% if skill.proficiency_score is not None %}{{ skill.proficiency_score }}{% else %}{{ skill.skill_score|default:0 }}{% endif %}</span>
+                                <span class="badge-custom badge-low" style="font-size: 10px;">{% if skill.confidence %}{{ skill.confidence }}% conf{% elif skill.source %}{{ skill.source }}{% else %}Tracked{% endif %}</span>
                             </div>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: {{ skill.skill_score }}%;"></div>
+                            <div class="progress-bar-fill" style="width: {% if skill.proficiency_score is not None %}{{ skill.proficiency_score }}{% else %}{{ skill.skill_score|default:0 }}{% endif %}%;"></div>
                         </div>
                     </div>
                 {% endfor %}
@@ -63,10 +63,10 @@
 new Chart(document.getElementById('skillsChart'), {
     type: 'bar',
     data: {
-        labels: [{% for s in skills %}"{{ s.skill_name }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+        labels: [{% for s in skills %}"{% if s.skill.name %}{{ s.skill.name|escapejs }}{% else %}{{ s.skill_name|escapejs }}{% endif %}"{% if not forloop.last %},{% endif %}{% endfor %}],
         datasets: [{
             label: 'Skill Score',
-            data: [{% for s in skills %}{{ s.skill_score }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            data: [{% for s in skills %}{% if s.proficiency_score is not None %}{{ s.proficiency_score }}{% else %}{{ s.skill_score|default:0 }}{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
             backgroundColor: [
                 '#7C3AED', '#2563EB', '#06B6D4', '#8B5CF6', '#4F46E5',
                 '#10B981', '#F59E0B', '#EF4444', '#7C3AED', '#2563EB'

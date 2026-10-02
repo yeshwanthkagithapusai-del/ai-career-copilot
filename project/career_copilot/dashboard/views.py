@@ -8,7 +8,7 @@ from accounts.models import UserProfile, Notification
 from resume_analyzer.models import Resume
 from interviews.models import InterviewSession
 from assessments.models import Test
-from roadmaps.models import Roadmap, Skill
+from roadmaps.models import Roadmap
 from career_progress.models import CareerProgress
 from ai_services.career_ai import CareerAIService
 
