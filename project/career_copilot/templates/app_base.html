@@ -3,69 +3,62 @@
 
 {% block extra_head %}
 <style>
-/* ═══ CHATBOT GUARANTEED OVERRIDES ═══
-   These inline styles load AFTER all external CSS sheets,
-   so they always win the cascade — no caching issues possible. */
-
-/* Panel */
+/* ═══ CHATBOT STYLING OVERRIDES (Dark Navy & Golden-Yellow) ═══ */
 .chatbot-panel {
-    background: rgba(6, 10, 28, 0.98) !important;
-    border: 1px solid rgba(99, 102, 241, 0.45) !important;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.7),
-                0 0 0 1px rgba(14,165,233,0.10) inset !important;
+    background: #141B2D !important;
+    border: 1px solid #2B3650 !important;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.8),
+                0 0 0 1px rgba(251, 191, 36, 0.12) inset !important;
 }
 
-/* Header */
 .chatbot-header {
-    background: linear-gradient(135deg, rgba(79,70,229,0.22), rgba(14,165,233,0.12)) !important;
-    border-bottom: 1px solid rgba(79,70,229,0.3) !important;
+    background: #0F172A !important;
+    border-bottom: 1px solid #2B3650 !important;
 }
 
-/* Messages background */
 .chatbot-messages {
     background: transparent !important;
 }
 
-/* ── BOT bubble: guaranteed bright white text ── */
+/* ── BOT bubble: dark input surface with clean border ── */
 .chat-message.bot {
-    background: rgba(30, 42, 95, 0.80) !important;
-    border: 1px solid rgba(99, 102, 241, 0.50) !important;
-    color: #FFFFFF !important;
+    background: #1B2540 !important;
+    border: 1px solid #2B3650 !important;
+    color: #F8FAFC !important;
     font-size: 13.5px !important;
     line-height: 1.6 !important;
     align-self: flex-start !important;
     border-radius: 14px !important;
     border-bottom-left-radius: 4px !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3),
-                0 0 0 1px rgba(99,102,241,0.15) inset !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
 }
 
-/* ── USER bubble ── */
+/* ── USER bubble: golden-yellow accent with high-contrast text ── */
 .chat-message.user {
-    background: linear-gradient(135deg, #4F46E5, #0EA5E9) !important;
-    color: #FFFFFF !important;
+    background: #FBBF24 !important;
+    color: #0B1020 !important;
+    font-weight: 600 !important;
     align-self: flex-end !important;
     border-radius: 14px !important;
     border-bottom-right-radius: 4px !important;
-    box-shadow: 0 4px 16px rgba(79,70,229,0.4) !important;
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.25) !important;
 }
 
 /* Input area */
 .chatbot-input-area {
-    background: rgba(10,14,36,0.6) !important;
-    border-top: 1px solid rgba(79,70,229,0.22) !important;
+    background: #0F172A !important;
+    border-top: 1px solid #2B3650 !important;
 }
 
-/* Input field */
 .chatbot-input-area .form-input {
-    background: rgba(255,255,255,0.08) !important;
-    border: 1px solid rgba(99,102,241,0.35) !important;
-    color: #FFFFFF !important;
-    border-radius: 12px !important;
+    background: #1B2540 !important;
+    border: 1px solid #2B3650 !important;
+    color: #F8FAFC !important;
+    border-radius: 8px !important;
 }
 
 .chatbot-input-area .form-input::placeholder {
-    color: rgba(180,200,255,0.5) !important;
+    color: #64748B !important;
     opacity: 1 !important;
 }
 </style>
@@ -145,14 +138,14 @@
                         0
                     </span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto; background: var(--card-bg); border: 1px solid var(--border-color);">
-                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-secondary border-opacity-25">
-                        <h6 class="mb-0 fw-bold text-white">Notifications</h6>
-                        <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none" onclick="markAllNotificationsRead(event)">Mark all read</button>
+                <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationDropdown" style="width: 340px; max-height: 440px; overflow-y: auto; background: var(--bg-surface-elevated, #1E2742); border: 1px solid var(--border-color, #2B3650); border-radius: var(--radius-md, 12px); box-shadow: 0 16px 40px rgba(0,0,0,0.65);">
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom" style="border-color: var(--border-color, #2B3650) !important;">
+                        <h6 class="mb-0 fw-bold" style="color: var(--text-primary, #F8FAFC); font-size: 14px;">Notifications</h6>
+                        <button class="btn btn-sm btn-link p-0 text-decoration-none" style="color: var(--accent-primary, #FBBF24); font-size: 12px; font-weight: 600;" onclick="markAllNotificationsRead(event)">Mark all read</button>
                     </div>
                     <div id="notificationList" class="p-2">
                         <!-- Notifications injected via JS -->
-                        <div class="text-center text-muted py-3 small">Loading...</div>
+                        <div class="text-center py-3 small" style="color: #94A3B8;">Loading...</div>
                     </div>
                 </div>
             </div>
@@ -205,11 +198,11 @@
         <div class="chat-message bot">Hi! I'm your AI Career Copilot. Ask me about resumes, interviews, skills, or your career path!</div>
     </div>
     
-    <div class="chatbot-quick-actions" style="padding: 10px 16px; background: rgba(15,23,42,0.9); border-top: 1px solid var(--border-color); display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;">
-        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='What is my next best action?'; document.getElementById('chatbot-send').click();" style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); color: #C4B5FD; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Next Action</button>
-        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='Analyze my skill gaps'; document.getElementById('chatbot-send').click();" style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.3); color: #67E8F9; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Skill Gaps</button>
-        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='Help me prepare for an interview'; document.getElementById('chatbot-send').click();" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Interview Prep</button>
-        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='Suggest a project'; document.getElementById('chatbot-send').click();" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #FCD34D; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Suggest Project</button>
+    <div class="chatbot-quick-actions" style="padding: 10px 16px; background: #0F172A; border-top: 1px solid var(--border-color); display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;">
+        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='What is my next best action?'; document.getElementById('chatbot-send').click();" style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); color: #FBBF24; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Next Action</button>
+        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='Analyze my skill gaps'; document.getElementById('chatbot-send').click();" style="background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.25); color: #60A5FA; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Skill Gaps</button>
+        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='Help me prepare for an interview'; document.getElementById('chatbot-send').click();" style="background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25); color: #34D399; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Interview Prep</button>
+        <button class="quick-action-btn" onclick="document.getElementById('chatbot-input').value='Suggest a project'; document.getElementById('chatbot-send').click();" style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); color: #FCD34D; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">Suggest Project</button>
     </div>
     
     <div class="chatbot-input-area">
@@ -244,24 +237,34 @@ function fetchNotifications() {
             if (!list) return;
 
             if (data.notifications.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-3 small">No notifications yet.</div>';
+                list.innerHTML = '<div class="text-center py-4 small" style="color: #94A3B8;"><i class="fas fa-bell-slash mb-2 d-block" style="font-size: 20px; opacity: 0.5;"></i>No notifications yet.</div>';
                 return;
             }
             
             list.innerHTML = '';
             data.notifications.forEach(n => {
-                const bgClass = n.is_read ? '' : 'bg-primary bg-opacity-10';
-                const dot = n.is_read ? '' : '<span class="position-absolute top-0 start-0 p-1 bg-primary border border-light rounded-circle" style="margin-top: 12px; margin-left: 8px;"></span>';
+                const isUnread = !n.is_read;
+                const bgStyle = isUnread 
+                    ? 'background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25);' 
+                    : 'background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05);';
+                const dot = isUnread 
+                    ? '<span style="display: inline-block; width: 8px; height: 8px; background: #FBBF24; box-shadow: 0 0 8px rgba(251, 191, 36, 0.7); border-radius: 50%; margin-top: 5px; flex-shrink: 0;"></span>' 
+                    : '';
                 const actionHref = n.action_url ? n.action_url : '#';
                 const cursor = n.action_url ? 'cursor: pointer;' : '';
                 
                 list.innerHTML += `
-                    <div class="position-relative p-2 rounded mb-1 ${bgClass}" style="${cursor}" onclick="readNotification(${n.id}, '${actionHref}')">
-                        ${dot}
-                        <div class="ps-3 pe-1">
-                            <div class="fw-bold text-white small">${n.title}</div>
-                            <div class="text-muted" style="font-size: 0.75rem;">${n.message}</div>
-                            <div class="text-muted mt-1" style="font-size: 0.65rem;">${n.created_at}</div>
+                    <div class="rounded mb-2 position-relative" style="${bgStyle} ${cursor} border-radius: 8px; padding: 10px 12px; transition: all 0.15s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.08)'" onmouseout="this.style.background='${isUnread ? 'rgba(251, 191, 36, 0.08)' : 'rgba(255, 255, 255, 0.02)'}'" onclick="readNotification(${n.id}, '${actionHref}')">
+                        <div class="d-flex align-items-start gap-2">
+                            ${dot}
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="color: #F8FAFC; font-weight: 600; font-size: 13.5px; line-height: 1.3;">${n.title}</div>
+                                <div style="color: #CBD5E1; font-size: 12.5px; line-height: 1.45; margin-top: 3px;">${n.message}</div>
+                                <div style="color: #94A3B8; font-size: 11px; margin-top: 5px; display: flex; align-items: center; gap: 4px;">
+                                    <i class="far fa-clock" style="font-size: 10px;"></i>
+                                    <span>${n.created_at}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;

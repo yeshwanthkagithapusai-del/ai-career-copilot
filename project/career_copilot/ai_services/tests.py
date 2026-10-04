@@ -37,6 +37,18 @@ class ContextAwareAssistantTests(TestCase):
         self.assertIn('resume', context['recent_evidence'])
         self.assertEqual(context['recent_evidence']['resume']['ats_score'], 85)
 
+    def test_career_context_with_roadmap_and_assessment(self):
+        from roadmaps.models import Roadmap
+        from assessments.models import Test as SkillAssessment
+        Roadmap.objects.create(user=self.user, target_career='Data Scientist')
+        SkillAssessment.objects.create(user=self.user, skill='Python', score=90)
+        context = CareerContextService.build_user_context(self.user)
+        self.assertIsNotNone(context['roadmap_status'])
+        self.assertEqual(context['roadmap_status']['target_role'], 'Data Scientist')
+        self.assertIn('assessment', context['recent_evidence'])
+        self.assertEqual(context['recent_evidence']['assessment']['topic'], 'Python')
+        self.assertEqual(context['recent_evidence']['assessment']['score'], 90)
+
     def test_data_leakage_protection(self):
         context = CareerContextService.build_user_context(self.other_user)
         self.assertEqual(context['target_career'], None)

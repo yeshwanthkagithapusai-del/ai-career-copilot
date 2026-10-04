@@ -42,17 +42,27 @@
                     placeholder="Type your answer here, or click 'Voice Answer' to speak..."
                     autocomplete="off" spellcheck="true" tabindex="0"></textarea>
 
-                <!-- Live transcription status banner -->
+                <!-- Live transcription status banner with audio meter -->
                 <div id="voice-status-{{ answer.id }}"
                      style="display:none; margin-top:8px; padding:10px 14px; border-radius:8px;
-                            background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.4);
+                            background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.35);
                             font-size:13px; color:var(--text-secondary);">
-                    <i class="fas fa-circle" style="font-size:9px; color:#ef4444;"></i>
-                    <span id="voice-status-text-{{ answer.id }}">Listening...</span>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-circle" id="voice-status-icon-{{ answer.id }}" style="font-size:9px; color:#ef4444;"></i>
+                            <span id="voice-status-text-{{ answer.id }}">Listening...</span>
+                        </div>
+                        <div id="voice-meter-wrap-{{ answer.id }}" style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:11px; color:var(--text-muted);"><i class="fas fa-wave-square"></i> Mic Level:</span>
+                            <div style="width:75px; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                                <div id="voice-meter-bar-{{ answer.id }}" style="width:0%; height:100%; background:var(--accent-primary); transition:width 0.1s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="d-flex gap-2 flex-wrap" style="position: relative; z-index: 2;">
+            <div class="d-flex gap-2 flex-wrap align-items-center" style="position: relative; z-index: 2;">
                 <button class="btn-primary-custom" type="button"
                     onclick="saveAnswer({{ answer.id }}, {{ forloop.counter0 }}, {{ forloop.counter0|add:1 }})"
                     id="save-btn-{{ answer.id }}">
@@ -69,6 +79,16 @@
                     style="display:none; background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.5);">
                     <i class="fas fa-stop"></i> Stop Recording
                 </button>
+                <select id="voice-lang-{{ answer.id }}" class="form-input" style="width: auto; padding: 7px 12px; font-size: 12.5px; height: 38px; border-radius: var(--radius-pill); cursor: pointer;" title="Select voice accent">
+                    <option value="en-IN" selected>🇮🇳 English (India)</option>
+                    <option value="en-US">🇺🇸 English (US)</option>
+                    <option value="en-GB">🇬🇧 English (UK)</option>
+                </select>
+            </div>
+
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 10px; display: flex; align-items: center; gap: 7px;">
+                <i class="fas fa-keyboard" style="color: var(--accent-primary);"></i>
+                <span>You can speak your answer using the microphone or type directly into the box. Both are evaluated equally by AI.</span>
             </div>
 
             <div id="feedback-{{ answer.id }}" class="mt-3"></div>
@@ -187,6 +207,12 @@ var voiceAnswerId      = null;   // which question is currently recording
 var recognitionObj     = null;   // SpeechRecognition instance
 var recognitionRunning = false;  // guard against double-start
 var accumulatedText    = "";     // text accumulated across restarts
+var currentInterim     = "";     // active interim transcript
+var audioContext       = null;   // Web Audio API context for volume meter
+var audioStream        = null;   // MediaStream from getUserMedia
+var audioMeterInterval = null;   // Timer for volume metering
+var soundDetectedEver  = false;  // Whether sound > threshold was heard
+var isVoiceFinalized   = false;  // Prevent duplicate finalization
 var mediaRecorderObj   = null;   // MediaRecorder for Whisper fallback
 var audioChunks        = [];
 
@@ -215,89 +241,198 @@ function setRecordUI(id, isRecording) {
 function appendToTextarea(id, text) {
     var ta = document.getElementById("answer-" + id);
     if (ta && text) {
-        // Append to existing typed text (don't overwrite if user typed something)
         var current = ta.value;
         ta.value = current + (current && !current.endsWith(" ") ? " " : "") + text;
     }
 }
 
-// ── Tier 1: Web Speech API ────────────────────────────────────
-//
-//  Key fix: Use continuous=false and restart manually.
-//  This avoids the silent-timeout bug in Chrome where continuous
-//  mode stops firing results after ~60 seconds or on silence.
-//  We restart automatically until the user clicks Stop.
-// ─────────────────────────────────────────────────────────────
+// ── Real-time Audio Level Meter ────────────────────────────────
+function startAudioMeter(id) {
+    soundDetectedEver = false;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
 
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+            audioStream = stream;
+            try {
+                var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                audioContext = new AudioContextClass();
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                var source = audioContext.createMediaStreamSource(stream);
+                var analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+
+                var dataArray = new Uint8Array(analyser.frequencyBinCount);
+                var meterBar = document.getElementById("voice-meter-bar-" + id);
+                var silentTicks = 0;
+
+                audioMeterInterval = setInterval(function() {
+                    if (!voiceAnswerId) return;
+                    analyser.getByteFrequencyData(dataArray);
+                    var sum = 0;
+                    for (var i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                    var avg = sum / dataArray.length;
+
+                    if (meterBar) {
+                        var pct = Math.min(100, Math.round(avg * 3));
+                        meterBar.style.width = pct + "%";
+                        if (pct > 40) {
+                            meterBar.style.background = "var(--success)";
+                        } else if (pct > 12) {
+                            meterBar.style.background = "var(--accent-primary)";
+                        } else {
+                            meterBar.style.background = "var(--text-muted)";
+                        }
+                    }
+
+                    if (avg > 5) {
+                        soundDetectedEver = true;
+                        silentTicks = 0;
+                    } else {
+                        silentTicks++;
+                        if (silentTicks > 40 && !soundDetectedEver && voiceAnswerId === id) {
+                            setVoiceStatus(id, "⚠️ No sound detected from mic. Check if your mic is muted or volume is low in Windows Sound settings.", true);
+                        }
+                    }
+                }, 100);
+            } catch(e) {
+                console.warn("AudioContext meter error:", e);
+            }
+        })
+        .catch(function(err) {
+            console.warn("getUserMedia error:", err);
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                setVoiceStatus(id, "Microphone access blocked. Click the lock/tune icon in your address bar to allow microphone.", true);
+                alert("Microphone access is blocked in your browser. Please allow microphone access in your browser address bar and try again.");
+            }
+        });
+}
+
+function stopAudioMeter(id) {
+    if (audioMeterInterval) { clearInterval(audioMeterInterval); audioMeterInterval = null; }
+    if (audioStream) { audioStream.getTracks().forEach(function(t) { t.stop(); }); audioStream = null; }
+    if (audioContext && audioContext.state !== 'closed') {
+        try { audioContext.close(); } catch(e) {}
+        audioContext = null;
+    }
+    if (id) {
+        var meterBar = document.getElementById("voice-meter-bar-" + id);
+        if (meterBar) meterBar.style.width = "0%";
+    }
+}
+
+// ── Tier 1: Web Speech API ────────────────────────────────────
 function createRecognition(id) {
     var r = new SpeechRecognitionAPI();
-    r.lang             = "en-US";
-    r.interimResults   = true;   // show words as you speak
-    r.maxAlternatives  = 1;
-    r.continuous       = false;  // IMPORTANT: false is more reliable
 
-    var sessionInterim = "";
+    var langSelect = document.getElementById("voice-lang-" + id);
+    var chosenLang = langSelect ? langSelect.value : (navigator.language || "en-IN");
+    r.lang             = chosenLang;
+    r.interimResults   = true;
+    r.maxAlternatives  = 1;
+    r.continuous       = true;
 
     r.onstart = function () {
         recognitionRunning = true;
         if (!voiceAnswerId) return;
-        setVoiceStatus(id, "Listening... speak now.", true);
+        var langLabel = chosenLang === 'en-IN' ? 'English (India)' : (chosenLang === 'en-GB' ? 'English (UK)' : 'English (US)');
+        setVoiceStatus(id, "Listening in " + langLabel + "... speak clearly into your mic.", true);
     };
 
     r.onresult = function (event) {
-        sessionInterim = "";
+        currentInterim = "";
         for (var i = event.resultIndex; i < event.results.length; i++) {
-            var transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-                accumulatedText += transcript + " ";
+            var item = event.results[i];
+            if (item.isFinal) {
+                accumulatedText += item[0].transcript + " ";
+                currentInterim = "";
             } else {
-                sessionInterim = transcript;
+                currentInterim += item[0].transcript;
             }
         }
-        // Write accumulated + live interim to textarea
         var ta = document.getElementById("answer-" + id);
         if (ta) {
-            ta.value = accumulatedText + (sessionInterim ? sessionInterim : "");
+            ta.value = (accumulatedText + currentInterim).trimStart();
         }
-        setVoiceStatus(id, sessionInterim ? '"' + sessionInterim + '"' : "Listening...", true);
+        if (currentInterim) {
+            setVoiceStatus(id, '"' + currentInterim + '"', true);
+        } else {
+            setVoiceStatus(id, "Listening... speak now.", true);
+        }
     };
 
     r.onerror = function (event) {
         recognitionRunning = false;
-        // "no-speech" and "aborted" are normal — just restart silently
-        if (event.error === "no-speech" || event.error === "aborted") {
+        console.warn("SpeechRecognition error:", event.error);
+
+        if (event.error === "no-speech") {
             if (voiceAnswerId === id) {
-                setTimeout(function () { restartRecognition(id); }, 200);
+                setVoiceStatus(id, "Listening... (waiting for voice input)", true);
             }
             return;
         }
-        // Real errors
-        console.warn("SpeechRecognition error:", event.error);
-        setVoiceStatus(id, "Mic error: " + event.error + ". Try again.", true);
+
+        if (event.error === "aborted") {
+            return;
+        }
+
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            setVoiceStatus(id, "Microphone access blocked. Click the lock icon in your browser address bar to allow microphone.", true);
+            alert("Microphone access is blocked in your browser. Please allow microphone access in your browser settings and try again.");
+        } else if (event.error === "network") {
+            setVoiceStatus(id, "Google Speech service network issue. You can type your answer in the box above.", true);
+        } else if (event.error === "audio-capture") {
+            setVoiceStatus(id, "No microphone detected. Check your mic connection in Windows sound settings.", true);
+        } else {
+            setVoiceStatus(id, "Mic status: " + event.error + ". You can also type your answer.", true);
+        }
+
         setRecordUI(id, false);
+        stopAudioMeter(id);
         voiceAnswerId = null;
     };
 
     r.onend = function () {
         recognitionRunning = false;
-        // Auto-restart while recording is still active
         if (voiceAnswerId === id) {
-            setTimeout(function () { restartRecognition(id); }, 100);
+            setTimeout(function () { restartRecognition(id); }, 150);
         } else {
-            // User stopped — clean up interim brackets
-            var ta = document.getElementById("answer-" + id);
-            if (ta) ta.value = accumulatedText.trim();
-            if (accumulatedText.trim()) {
-                setVoiceStatus(id, "Done! Review your answer above and click Submit.", true);
-                setTimeout(function () { setVoiceStatus(id, "", false); }, 5000);
-            } else {
-                setVoiceStatus(id, "No speech detected. Try again or type your answer.", true);
-            }
-            setRecordUI(id, false);
+            finalizeVoiceText(id);
+            stopAudioMeter(id);
         }
     };
 
     return r;
+}
+
+function finalizeVoiceText(id) {
+    if (isVoiceFinalized) return;
+    isVoiceFinalized = true;
+
+    if (currentInterim && currentInterim.trim()) {
+        accumulatedText += currentInterim.trim() + " ";
+        currentInterim = "";
+    }
+    var ta = document.getElementById("answer-" + id);
+    if (ta) {
+        var finalVal = accumulatedText.trim();
+        if (finalVal) {
+            ta.value = finalVal;
+            setVoiceStatus(id, "Done! Answer recorded. Review above and click 'Submit Answer'.", true);
+            setTimeout(function () { setVoiceStatus(id, "", false); }, 5000);
+        } else if (!ta.value.trim()) {
+            if (!soundDetectedEver) {
+                setVoiceStatus(id, "No sound detected from your microphone. Check that your physical microphone is unmuted and volume is up in Windows Settings > System > Sound.", true);
+            } else {
+                setVoiceStatus(id, "Sound was detected but no words recognized. Try speaking closer to mic, switch language accent, or type your answer above.", true);
+            }
+        }
+    }
+    setRecordUI(id, false);
 }
 
 function restartRecognition(id) {
@@ -307,16 +442,20 @@ function restartRecognition(id) {
         recognitionObj.start();
     } catch (e) {
         console.warn("Recognition restart failed:", e);
-        // Wait a bit and retry
-        setTimeout(function () { restartRecognition(id); }, 500);
+        setTimeout(function () {
+            if (voiceAnswerId === id && !recognitionRunning) {
+                restartRecognition(id);
+            }
+        }, 500);
     }
 }
 
 function startWithWebSpeech(id) {
-    voiceAnswerId   = id;
-    accumulatedText = "";
+    isVoiceFinalized = false;
+    voiceAnswerId    = id;
+    accumulatedText  = "";
+    currentInterim   = "";
 
-    // Preserve any text the user already typed
     var ta = document.getElementById("answer-" + id);
     if (ta && ta.value.trim()) {
         accumulatedText = ta.value.trim() + " ";
@@ -325,25 +464,30 @@ function startWithWebSpeech(id) {
     setRecordUI(id, true);
     setVoiceStatus(id, "Starting microphone...", true);
 
+    startAudioMeter(id);
+
     recognitionObj = createRecognition(id);
     try {
         recognitionObj.start();
     } catch (e) {
         console.error("Could not start recognition:", e);
-        alert("Could not start voice recognition. Make sure your browser allows microphone access.");
+        setVoiceStatus(id, "Could not start voice recognition. Please ensure microphone permissions are granted.", true);
         setRecordUI(id, false);
-        setVoiceStatus(id, "", false);
+        stopAudioMeter(id);
         voiceAnswerId = null;
     }
 }
 
 function stopWebSpeech(id) {
-    voiceAnswerId = null;  // signal onend not to restart
+    var targetId = voiceAnswerId || id;
+    voiceAnswerId = null;
     if (recognitionObj) {
         try { recognitionObj.stop(); } catch (e) {}
         recognitionObj = null;
     }
     recognitionRunning = false;
+    finalizeVoiceText(targetId);
+    stopAudioMeter(targetId);
 }
 
 // ── Tier 2: MediaRecorder + Whisper ──────────────────────────

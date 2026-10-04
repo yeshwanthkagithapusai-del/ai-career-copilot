@@ -18,17 +18,17 @@
 /* Progress card */
 .progress-card {
     padding: 24px;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-card);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(79, 70, 229, 0.2);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     transition: var(--transition);
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
 }
 
 .progress-card:hover {
-    border-color: rgba(14, 165, 233, 0.4);
-    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+    border-color: var(--border-hover);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
 }
 
 /* Chart container */
@@ -50,18 +50,18 @@
     align-items: flex-start;
     gap: 12px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(79, 70, 229, 0.2);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     margin-bottom: 12px;
     transition: var(--transition);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .suggestion-card:hover {
-    border-color: rgba(14, 165, 233, 0.4);
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    border-color: var(--border-hover);
+    background: var(--bg-surface-2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 .suggestion-icon {
@@ -92,16 +92,15 @@
 
 .question-card {
     padding: 32px;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(79, 70, 229, 0.2);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     margin-bottom: 24px;
     position: relative;
     z-index: 1;
     pointer-events: auto;
     isolation: isolate;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-card);
 }
 
 .question-number {
@@ -175,11 +174,11 @@
 /* Test room */
 .test-question {
     padding: 24px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(79, 70, 229, 0.2);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     margin-bottom: 16px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-card);
 }
 
 .test-option {
@@ -187,28 +186,28 @@
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    background: rgba(248, 250, 252, 1);
-    border: 1.5px solid rgba(203, 213, 225, 0.8);
+    background: var(--bg-input);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: var(--transition);
     margin-bottom: 8px;
+    color: var(--text-primary);
 }
 
 .test-option:hover {
-    border-color: var(--accent-glow);
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+    border-color: var(--accent-primary);
+    background: rgba(251, 191, 36, 0.06);
 }
 
 .test-option.selected {
-    border-color: var(--accent-glow);
-    background: rgba(139, 92, 246, 0.08);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+    border-color: var(--accent-primary);
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--text-primary);
 }
 
 .test-option input[type="radio"] {
-    accent-color: var(--accent-glow);
+    accent-color: var(--accent-primary);
     width: 18px;
     height: 18px;
 }
@@ -233,16 +232,16 @@
     position: relative;
     margin-bottom: 32px;
     padding: 24px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(79, 70, 229, 0.2);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     transition: var(--transition);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-card);
 }
 
 .roadmap-phase:hover {
-    border-color: rgba(14, 165, 233, 0.4);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-card-hover);
 }
 
 .roadmap-phase::before {
@@ -288,11 +287,10 @@
     width: 320px;
     max-height: 400px;
     overflow-y: auto;
-    background: rgba(11, 16, 32, 0.95);
-    backdrop-filter: blur(30px);
+    background: var(--bg-surface-elevated);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     z-index: 1000;
     display: none;
 }
@@ -473,14 +471,14 @@
     width: 100%;
     max-width: 480px;
     padding: 40px;
-    background: rgba(11, 16, 32, 0.7);
+    background: rgba(24, 23, 20, 0.92);
     backdrop-filter: blur(30px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     z-index: 2;
     position: relative;
     pointer-events: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(252, 196, 56, 0.05);
     margin: 24px auto;
 }
 
@@ -560,11 +558,11 @@ password-toggle {
 /* FAQ */
 .faq-item {
     margin-bottom: 16px;
-    border: 1px solid rgba(79, 70, 229, 0.2);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-card);
 }
 
 .faq-question {
@@ -575,12 +573,13 @@ password-toggle {
     align-items: center;
     font-weight: 700;
     font-size: 16px;
-    color: #0F172A;
+    color: var(--text-primary);
     transition: var(--transition);
 }
 
 .faq-question:hover {
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(251, 191, 36, 0.05);
+    color: var(--accent-primary);
 }
 
 .faq-answer {
@@ -588,7 +587,7 @@ password-toggle {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease;
-    color: #334155;
+    color: var(--text-secondary);
     font-size: 15px;
     line-height: 1.75;
 }

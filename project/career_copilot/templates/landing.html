@@ -1,156 +1,613 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}AI Career Copilot - Your AI Copilot for Career Success{% endblock %}
+{% block title %}AI Career Copilot — Career Intelligence Platform{% endblock %}
 
-{% block body_class %}landing-page animated-gradient{% endblock %}
+{% block body_class %}landing-page{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=4">
 {% endblock %}
 
 {% block body %}
-<div id="three-scene-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.15;"></div>
+<!-- Ambient Three.js Canvas -->
+<div id="three-scene-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.12;"></div>
 
-<!-- Nav -->
-<nav class="position-fixed top-0 w-100 px-4 py-3" style="z-index: 100;">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-            <div class="sidebar-logo"><i class="fas fa-robot"></i></div>
-            <span class="sidebar-title">AI Career Copilot</span>
-        </div>
-        <div class="d-flex gap-3">
-            <a href="{% url 'accounts:login' %}" class="btn-secondary-custom">Login</a>
-            <a href="{% url 'accounts:signup' %}" class="btn-primary-custom">Get Started</a>
-        </div>
-    </div>
-</nav>
+<!-- ─── Floating Island Top Navigation (Signature Marcus Lorenzet Header) ─── -->
+<header class="lorenzet-nav-wrapper">
+    <nav class="lorenzet-nav">
+        <a href="{% url 'accounts:landing' %}" class="lorenzet-brand">
+            <div class="lorenzet-brand-logo"><i class="fas fa-terminal"></i></div>
+            <span class="lorenzet-brand-text">CAREER COPILOT</span>
+            <span class="lorenzet-brand-badge">2.0</span>
+        </a>
 
-<!-- Hero -->
-<section class="landing-hero">
-    <div class="hero-content">
-        <h1 class="hero-title">Your AI Copilot for <span class="gradient-text">Career Success</span></h1>
-        <p class="hero-subtitle">Analyze your skills, improve your resume, practice interviews, and build your personalized career roadmap with AI.</p>
-        <div class="hero-cta-group">
-            <a href="{% url 'accounts:signup' %}" class="btn-primary-custom btn-shine" style="font-size: 16px; padding: 16px 36px;">
-                <i class="fas fa-rocket"></i> Start Your Career Journey
-            </a>
-            <a href="#features" class="btn-secondary-custom" style="font-size: 16px; padding: 16px 36px;">
-                <i class="fas fa-arrow-down"></i> Explore Features
-            </a>
-        </div>
-    </div>
-</section>
+        <ul class="lorenzet-nav-links">
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#capabilities">Capabilities</a></li>
+            <li><a href="#workflow">Architecture</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#faq">FAQ</a></li>
+        </ul>
 
-<!-- Features -->
-<section id="features" class="py-5 px-4" style="max-width: 1200px; margin: 0 auto; position: relative; z-index: 3;">
-    <h2 class="text-center mb-2" style="font-size: 40px; font-weight: 800;">Platform <span class="gradient-text">Features</span></h2>
-    <p class="text-center text-secondary-custom mb-5" style="font-size: 18px;">Everything you need to accelerate your career development</p>
+        <div class="lorenzet-nav-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:dashboard' %}" class="lorenzet-nav-cta">Dashboard <i class="fas fa-arrow-right"></i></a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="lorenzet-nav-login">Sign In</a>
+                <a href="{% url 'accounts:signup' %}" class="lorenzet-nav-cta">Launch Copilot <i class="fas fa-arrow-right"></i></a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-file-alt"></i></div>
-                <h3 class="feature-title">Resume ATS Analyzer</h3>
-                <p class="feature-description">Upload your resume and get an instant ATS score with AI-powered suggestions for improvement.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-comments"></i></div>
-                <h3 class="feature-title">AI Mock Interviews</h3>
-                <p class="feature-description">Practice with dynamically generated interview questions tailored to your target role.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-laptop-code"></i></div>
-                <h3 class="feature-title">Skill Assessments</h3>
-                <p class="feature-description">Take AI-generated tests to identify your strong and weak areas across multiple skills.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
-                <h3 class="feature-title">Personalized Roadmaps</h3>
-                <p class="feature-description">Get a step-by-step learning roadmap tailored to your career goal and current skills.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                <h3 class="feature-title">Progress Analytics</h3>
-                <p class="feature-description">Track your career development with real graphs showing your improvement over time.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fas fa-robot"></i></div>
-                <h3 class="feature-title">AI Career Assistant</h3>
-                <p class="feature-description">Chat with your personal AI career coach for guidance on resumes, interviews, and skills.</p>
-            </div>
-        </div>
+<!-- ─── Hero Section ──────────────────────────────────────────────────────── -->
+<section id="overview" class="lorenzet-hero">
+    <div class="lorenzet-status-pill">
+        <span class="lorenzet-status-dot"></span>
+        <span>AI Career Intelligence Platform · Active</span>
     </div>
-</section>
 
-<!-- How It Works -->
-<section class="py-5 px-4" style="max-width: 1000px; margin: 0 auto; position: relative; z-index: 3;">
-    <h2 class="text-center mb-5" style="font-size: 40px; font-weight: 800;">How It <span class="gradient-text">Works</span></h2>
-    <div class="row g-4">
-        <div class="col-md-4 text-center">
-            <div class="stat-icon purple mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;"><i class="fas fa-user-plus"></i></div>
-            <h4 class="mb-2">1. Create Your Profile</h4>
-            <p class="text-secondary-custom">Sign up and tell us your career goal, degree, and current skills.</p>
-        </div>
-        <div class="col-md-4 text-center">
-            <div class="stat-icon blue mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;"><i class="fas fa-chart-bar"></i></div>
-            <h4 class="mb-2">2. Assess Your Skills</h4>
-            <p class="text-secondary-custom">Upload your resume, take tests, and practice interviews to get AI analysis.</p>
-        </div>
-        <div class="col-md-4 text-center">
-            <div class="stat-icon cyan mx-auto mb-3" style="width: 64px; height: 64px; font-size: 28px;"><i class="fas fa-trophy"></i></div>
-            <h4 class="mb-2">3. Track Your Progress</h4>
-            <p class="text-secondary-custom">Follow your personalized roadmap and watch your career progress improve.</p>
-        </div>
-    </div>
-</section>
+    <h1 class="lorenzet-hero-title">
+        Career intelligence crafted for ambitious minds who care about <span class="highlight">every detail.</span>
+    </h1>
 
-<!-- FAQ -->
-<section class="py-5 px-4" style="max-width: 800px; margin: 0 auto; position: relative; z-index: 3;">
-    <h2 class="text-center mb-5" style="font-size: 40px; font-weight: 800;">Frequently Asked <span class="gradient-text">Questions</span></h2>
+    <p class="lorenzet-hero-subtitle">
+        Consolidating ATS resume diagnostics, adaptive AI mock interviews, canonical skill graphs, and personalized career roadmaps into one unified, high-precision intelligence platform.
+    </p>
 
-    <div class="faq-item">
-        <div class="faq-question"><span>Is AI Career Copilot free to use?</span><i class="fas fa-chevron-down"></i></div>
-        <div class="faq-answer"><p>Yes, AI Career Copilot is free for students. Create an account and start your career development journey today.</p></div>
-    </div>
-    <div class="faq-item">
-        <div class="faq-question"><span>How does the ATS resume scoring work?</span><i class="fas fa-chevron-down"></i></div>
-        <div class="faq-answer"><p>Our system extracts text from your PDF or DOCX resume, analyzes keywords, skills, sections, formatting, and action verbs to calculate a comprehensive ATS compatibility score.</p></div>
-    </div>
-    <div class="faq-item">
-        <div class="faq-question"><span>Are the interview questions the same every time?</span><i class="fas fa-chevron-down"></i></div>
-        <div class="faq-answer"><p>No, our AI generates unique questions based on your target role, difficulty level, and previous performance. Each interview is a fresh experience.</p></div>
-    </div>
-    <div class="faq-item">
-        <div class="faq-question"><span>Can I track my progress over time?</span><i class="fas fa-chevron-down"></i></div>
-        <div class="faq-answer"><p>Yes, every assessment, interview, and resume analysis is stored. Your career progress page shows real graphs of your scores over time, including improvements and declines.</p></div>
-    </div>
-</section>
-
-<!-- CTA -->
-<section class="py-5 px-4 text-center" style="position: relative; z-index: 3;">
-    <div class="glass-card p-5" style="max-width: 700px; margin: 0 auto;">
-        <h2 style="font-size: 32px; font-weight: 800;" class="mb-3">Ready to Start Your <span class="gradient-text">Career Journey?</span></h2>
-        <p class="text-secondary-custom mb-4" style="font-size: 18px;">Join thousands of students accelerating their career development with AI.</p>
-        <a href="{% url 'accounts:signup' %}" class="btn-primary-custom btn-shine" style="font-size: 16px; padding: 16px 40px;">
-            <i class="fas fa-rocket"></i> Get Started for Free
+    <div class="lorenzet-hero-cta-group">
+        <a href="{% url 'accounts:signup' %}" class="btn-lorenzet-primary">
+            Start Career Journey <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="#capabilities" class="btn-lorenzet-secondary">
+            [ Explore Capabilities ]
         </a>
     </div>
+
+    <div class="lorenzet-hero-ticker">
+        <span><i class="fas fa-check text-warning me-1"></i> PIXEL-BY-PIXEL PRECISION</span>
+        <span class="separator">/</span>
+        <span><i class="fas fa-microchip text-warning me-1"></i> ZERO GUESSWORK</span>
+        <span class="separator">/</span>
+        <span><i class="fas fa-shield-alt text-warning me-1"></i> REAL-TIME AI ADAPTATION</span>
+    </div>
 </section>
 
-<!-- Footer -->
-<footer class="py-4 px-4 text-center text-secondary-custom" style="border-top: 1px solid var(--border-color); position: relative; z-index: 3;">
-    <p>&copy; 2026 AI Career Copilot. Built for students, by AI.</p>
+<!-- ─── Live Metrics Grid (Marcus Lorenzet Signature Strip) ───────────────── -->
+<section class="lorenzet-metrics-section">
+    <div class="lorenzet-metrics-grid">
+        <div class="lorenzet-metric-item">
+            <div class="lorenzet-metric-num">15<span class="gold">+</span></div>
+            <div class="lorenzet-metric-label">[ Target Roles ]</div>
+            <div class="lorenzet-metric-sub">Full Stack, AI/ML, DevOps & Cloud</div>
+        </div>
+        <div class="lorenzet-metric-item">
+            <div class="lorenzet-metric-num">5,000<span class="gold">+</span></div>
+            <div class="lorenzet-metric-label">[ Skill Graph Nodes ]</div>
+            <div class="lorenzet-metric-sub">Canonical taxonomy & evidence validation</div>
+        </div>
+        <div class="lorenzet-metric-item">
+            <div class="lorenzet-metric-num">98.4<span class="gold">%</span></div>
+            <div class="lorenzet-metric-label">[ ATS Match Accuracy ]</div>
+            <div class="lorenzet-metric-sub">Keyword density & semantic indexing</div>
+        </div>
+        <div class="lorenzet-metric-item">
+            <div class="lorenzet-metric-num">&lt; 1.2<span class="gold">s</span></div>
+            <div class="lorenzet-metric-label">[ Inference Speed ]</div>
+            <div class="lorenzet-metric-sub">Sub-second real-time diagnostics</div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Philosophy / Statement Banner ────────────────────────────────────── -->
+<section class="lorenzet-statement-section text-center">
+    <div class="bracket-tag">[ PLATFORM PHILOSOPHY ]</div>
+    <div class="lorenzet-statement-quote">
+        “We believe career readiness shouldn't be left to guesswork. We turn complex industry benchmarks into <span class="gold-word">clear, measurable progress</span>.”
+    </div>
+    <div class="lorenzet-statement-author">
+        — From Career Confusion to Career Readiness · AI Career Copilot
+    </div>
+</section>
+
+<!-- ─── Case Studies / Core Capabilities Showcase ────────────────────────── -->
+<section id="capabilities" class="lorenzet-showcase-section">
+    <div class="lorenzet-section-header">
+        <div>
+            <div class="bracket-tag">[ CAPABILITIES &amp; CASE STUDIES ]</div>
+            <h2 class="lorenzet-section-title">Built with intention for every step of your career.</h2>
+        </div>
+        <div class="d-none d-md-block">
+            <span class="bracket-tag muted">4 CORE MODULES</span>
+        </div>
+    </div>
+
+    <div class="lorenzet-showcase-grid">
+        <!-- Module 01: Resume Analyzer -->
+        <div class="lorenzet-case-card">
+            <div class="lorenzet-case-info">
+                <div class="lorenzet-case-meta">
+                    <span class="bracket-tag gold">[ MODULE 01 ]</span>
+                    <span class="lorenzet-pill-tag">Resume Intelligence</span>
+                    <span class="lorenzet-pill-tag">ATS Engine</span>
+                </div>
+                <h3 class="lorenzet-case-title">ATS Resume Scoring &amp; AI Diagnostic Studio</h3>
+                <p class="lorenzet-case-desc">
+                    Upload multi-page PDF or DOCX resumes and receive instant ATS compatibility analysis, keyword density mapping, section-by-section breakdown, and AI recommendations to pass recruiter filters.
+                </p>
+                <div class="lorenzet-case-bullets">
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Granular score calculation across 5 key dimensions</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Missing critical industry keyword detection</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Instant actionable rewrite suggestions</div>
+                </div>
+                <a href="{% url 'resume_analyzer:resume_analyzer' %}" class="lorenzet-case-cta">
+                    Explore Resume Analyzer <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Preview Widget 1 -->
+            <div class="lorenzet-mock-preview">
+                <div class="mock-window-header">
+                    <div class="mock-window-dots">
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                    </div>
+                    <span class="mock-window-title">ATS_DIAGNOSTIC_REPORT.JSON</span>
+                </div>
+
+                <div class="mock-ats-layout">
+                    <div class="mock-gauge-circle">
+                        <span class="mock-gauge-val">94</span>
+                        <span class="mock-gauge-lbl">HIGH MATCH</span>
+                    </div>
+                    <div class="mock-stat-bars">
+                        <div class="mock-bar-row">
+                            <div class="mock-bar-meta"><span>Industry Keywords</span><span>92%</span></div>
+                            <div class="mock-bar-track"><div class="mock-bar-fill" style="width: 92%;"></div></div>
+                        </div>
+                        <div class="mock-bar-row">
+                            <div class="mock-bar-meta"><span>Formatting &amp; Structure</span><span>98%</span></div>
+                            <div class="mock-bar-track"><div class="mock-bar-fill" style="width: 98%;"></div></div>
+                        </div>
+                        <div class="mock-bar-row">
+                            <div class="mock-bar-meta"><span>Quantified Impact</span><span>88%</span></div>
+                            <div class="mock-bar-track"><div class="mock-bar-fill" style="width: 88%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap pt-2 border-top border-secondary border-opacity-10">
+                    <span class="badge bg-dark border border-secondary text-warning" style="font-family: var(--lorenzet-font-mono); font-size: 10px;">+ Python 3.11</span>
+                    <span class="badge bg-dark border border-secondary text-warning" style="font-family: var(--lorenzet-font-mono); font-size: 10px;">+ Django ORM</span>
+                    <span class="badge bg-dark border border-secondary text-warning" style="font-family: var(--lorenzet-font-mono); font-size: 10px;">+ PostgreSQL</span>
+                    <span class="badge bg-dark border border-secondary text-warning" style="font-family: var(--lorenzet-font-mono); font-size: 10px;">+ REST APIs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 02: Mock Interviews -->
+        <div class="lorenzet-case-card">
+            <div class="lorenzet-case-info">
+                <div class="lorenzet-case-meta">
+                    <span class="bracket-tag gold">[ MODULE 02 ]</span>
+                    <span class="lorenzet-pill-tag">Speech &amp; Text</span>
+                    <span class="lorenzet-pill-tag">Dynamic AI</span>
+                </div>
+                <h3 class="lorenzet-case-title">Adaptive AI Mock Interviews &amp; Rubric Scoring</h3>
+                <p class="lorenzet-case-desc">
+                    Practice with dynamically tailored interview questions specifically calibrated to your target career role, difficulty tier, and past weak spots. Receive instantaneous structured feedback on clarity, technical accuracy, and STAR delivery.
+                </p>
+                <div class="lorenzet-case-bullets">
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Dynamic scenario generation — never the same interview twice</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Multi-dimensional rubric scoring across 4 pillars</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Automatic skill evidence generation stored to user profile</div>
+                </div>
+                <a href="{% url 'interviews:interview_setup' %}" class="lorenzet-case-cta">
+                    Launch Interview Simulator <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Preview Widget 2 -->
+            <div class="lorenzet-mock-preview">
+                <div class="mock-window-header">
+                    <div class="mock-window-dots">
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                    </div>
+                    <span class="mock-window-title">LIVE_SESSION_RUNNER</span>
+                </div>
+
+                <div class="p-3 rounded" style="background: rgba(24, 23, 20, 0.9); border: 1px solid var(--lorenzet-border);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="bracket-tag gold" style="font-size: 10px;">[ QUESTION 02 OF 05 ]</span>
+                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50" style="font-size: 9px;">● RECORDING</span>
+                    </div>
+                    <p class="mb-2" style="font-size: 13.5px; font-weight: 600; color: #FAF8F5;">
+                        "Describe an architecture decision where you chose between relational consistency vs horizontal scalability."
+                    </p>
+                </div>
+
+                <div class="mock-interview-wave">
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                </div>
+
+                <div class="d-flex justify-content-between text-secondary" style="font-family: var(--lorenzet-font-mono); font-size: 11px;">
+                    <span>TECHNICAL DEPTH: 95%</span>
+                    <span>STAR STRUCTURE: 91%</span>
+                    <span>CONFIDENCE: 94%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 03: Roadmaps -->
+        <div class="lorenzet-case-card">
+            <div class="lorenzet-case-info">
+                <div class="lorenzet-case-meta">
+                    <span class="bracket-tag gold">[ MODULE 03 ]</span>
+                    <span class="lorenzet-pill-tag">Knowledge Architecture</span>
+                    <span class="lorenzet-pill-tag">Milestone Engine</span>
+                </div>
+                <h3 class="lorenzet-case-title">Interactive Step-by-Step Learning Roadmaps</h3>
+                <p class="lorenzet-case-desc">
+                    Stop drowning in random tutorials. Copilot aligns your target role with verified canonical skill prerequisites, organizing your path into prioritized, bite-sized phases with recommended resources and mini-evaluations.
+                </p>
+                <div class="lorenzet-case-bullets">
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Canonical skill normalization prevents redundant study</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Phase-based milestone checkpoints with verification</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Direct integration with portfolio projects &amp; test center</div>
+                </div>
+                <a href="{% url 'roadmaps:roadmap' %}" class="lorenzet-case-cta">
+                    View Roadmap Architecture <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Preview Widget 3 -->
+            <div class="lorenzet-mock-preview">
+                <div class="mock-window-header">
+                    <div class="mock-window-dots">
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                    </div>
+                    <span class="mock-window-title">FULLSTACK_ROADMAP_TRACK.TREE</span>
+                </div>
+
+                <div class="mock-roadmap-nodes">
+                    <div class="mock-roadmap-line"></div>
+                    <div class="mock-node-step done">
+                        <div class="mock-node-circle"><i class="fas fa-check"></i></div>
+                        <span class="mock-node-label">Phase 1</span>
+                    </div>
+                    <div class="mock-node-step done">
+                        <div class="mock-node-circle"><i class="fas fa-check"></i></div>
+                        <span class="mock-node-label">Phase 2</span>
+                    </div>
+                    <div class="mock-node-step active">
+                        <div class="mock-node-circle">03</div>
+                        <span class="mock-node-label" style="color: var(--lorenzet-gold);">Active</span>
+                    </div>
+                    <div class="mock-node-step">
+                        <div class="mock-node-circle">04</div>
+                        <span class="mock-node-label">Final</span>
+                    </div>
+                </div>
+
+                <div class="p-2 rounded" style="background: rgba(24, 23, 20, 0.7); border: 1px solid var(--lorenzet-border); font-size: 12px;">
+                    <div class="d-flex justify-content-between text-warning mb-1" style="font-family: var(--lorenzet-font-mono);">
+                        <span>PHASE 3: BACKEND ARCHITECTURE</span>
+                        <span>75% DONE</span>
+                    </div>
+                    <div class="mock-bar-track"><div class="mock-bar-fill" style="width: 75%;"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module 04: Skill Assessments & Evidence -->
+        <div class="lorenzet-case-card">
+            <div class="lorenzet-case-info">
+                <div class="lorenzet-case-meta">
+                    <span class="bracket-tag gold">[ MODULE 04 ]</span>
+                    <span class="lorenzet-pill-tag">Adaptive Testing</span>
+                    <span class="lorenzet-pill-tag">Evidence Truth</span>
+                </div>
+                <h3 class="lorenzet-case-title">Skill Assessment Center &amp; Evidence Engine</h3>
+                <p class="lorenzet-case-desc">
+                    Benchmark real proficiency with AI-generated test suites spanning algorithms, system design, databases, and frameworks. Every answer feeds directly into your verified skill evidence repository.
+                </p>
+                <div class="lorenzet-case-bullets">
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Dynamic question generator targeting specific difficulty tiers</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Explanations provided for every question and alternative</div>
+                    <div class="lorenzet-bullet"><i class="fas fa-check-circle"></i> Continuous readiness index tracking over time</div>
+                </div>
+                <a href="{% url 'assessments:test_setup' %}" class="lorenzet-case-cta">
+                    Start Skill Assessment <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Preview Widget 4 -->
+            <div class="lorenzet-mock-preview">
+                <div class="mock-window-header">
+                    <div class="mock-window-dots">
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                        <span class="mock-dot"></span>
+                    </div>
+                    <span class="mock-window-title">DIAGNOSTIC_EVALUATION</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="bracket-tag gold" style="font-size: 10px;">[ SYSTEM TEST: DJANGO &amp; POSTGRES ]</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #FAF8F5;">Proficiency: Advanced (Level 4)</div>
+                    </div>
+                    <div class="badge bg-warning text-dark px-3 py-2" style="font-family: var(--lorenzet-font-mono); font-size: 12px; font-weight: 700;">
+                        92.5% SCORE
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between small text-secondary" style="font-family: var(--lorenzet-font-mono);">
+                        <span>Evidence Nodes Verified</span>
+                        <span class="text-white">18 Skills Confirmed</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary" style="font-family: var(--lorenzet-font-mono);">
+                        <span>Accuracy on Hard Tier</span>
+                        <span class="text-white">9/10 Correct</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary" style="font-family: var(--lorenzet-font-mono);">
+                        <span>Career Readiness Boost</span>
+                        <span class="text-warning">+14.2%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Closed Loop Architecture Section ──────────────────────────────────── -->
+<section id="workflow" class="lorenzet-loop-section">
+    <div class="text-center mb-5">
+        <div class="bracket-tag">[ THE PRODUCT ARCHITECTURE ]</div>
+        <h2 class="lorenzet-section-title">The Continuous Career Intelligence Loop</h2>
+        <p class="text-secondary" style="max-width: 600px; margin: 12px auto 0;">
+            A closed-loop engine moving you methodically from uncertainty to verified market readiness.
+        </p>
+    </div>
+
+    <div class="lorenzet-loop-grid">
+        <div class="lorenzet-loop-item">
+            <span class="lorenzet-loop-step">[ 01 ]</span>
+            <div class="lorenzet-loop-name">ASSESS</div>
+            <div class="lorenzet-loop-sub">Profile, target career goal, and resume extraction.</div>
+        </div>
+        <div class="lorenzet-loop-item">
+            <span class="lorenzet-loop-step">[ 02 ]</span>
+            <div class="lorenzet-loop-name">DIAGNOSE</div>
+            <div class="lorenzet-loop-sub">ATS compatibility and keyword gap detection.</div>
+        </div>
+        <div class="lorenzet-loop-item">
+            <span class="lorenzet-loop-step">[ 03 ]</span>
+            <div class="lorenzet-loop-name">LEARN</div>
+            <div class="lorenzet-loop-sub">Tailored milestone roadmap with canonical skills.</div>
+        </div>
+        <div class="lorenzet-loop-item">
+            <span class="lorenzet-loop-step">[ 04 ]</span>
+            <div class="lorenzet-loop-name">PRACTICE</div>
+            <div class="lorenzet-loop-sub">Dynamic mock interviews and timed technical tests.</div>
+        </div>
+        <div class="lorenzet-loop-item">
+            <span class="lorenzet-loop-step">[ 05 ]</span>
+            <div class="lorenzet-loop-name">IMPROVE</div>
+            <div class="lorenzet-loop-sub">Instant AI rubric feedback and targeted drills.</div>
+        </div>
+        <div class="lorenzet-loop-item">
+            <span class="lorenzet-loop-step">[ 06 ]</span>
+            <div class="lorenzet-loop-name">TRACK</div>
+            <div class="lorenzet-loop-sub">Verified skill evidence &amp; readiness metrics.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Editorial Testimonials Section ────────────────────────────────────── -->
+<section id="testimonials" class="lorenzet-testimonials-section">
+    <div class="text-center mb-4">
+        <div class="bracket-tag">[ TESTIMONIALS &amp; SOCIAL PROOF ]</div>
+        <h2 class="lorenzet-section-title">Endorsed by engineers and career switchers.</h2>
+    </div>
+
+    <div class="lorenzet-test-grid">
+        <div class="lorenzet-test-card">
+            <p class="lorenzet-test-quote">
+                “The ATS Resume Analyzer found three critical keyword omissions in my portfolio that recruiters specifically filter for. Fixed them, applied again, and landed 4 callbacks within two weeks.”
+            </p>
+            <div class="lorenzet-test-user">
+                <div class="lorenzet-test-avatar">AR</div>
+                <div>
+                    <div class="lorenzet-test-name">Aravind Rao</div>
+                    <div class="lorenzet-test-role">Software Engineer @ FinTech</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lorenzet-test-card">
+            <p class="lorenzet-test-quote">
+                “Practicing with the AI Mock Interview simulator felt like speaking to a real principal engineer. The STAR feedback on my answers completely eliminated my interview anxiety.”
+            </p>
+            <div class="lorenzet-test-user">
+                <div class="lorenzet-test-avatar">SN</div>
+                <div>
+                    <div class="lorenzet-test-name">Sneha Nair</div>
+                    <div class="lorenzet-test-role">Backend Developer @ CloudCorp</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lorenzet-test-card">
+            <p class="lorenzet-test-quote">
+                “Having a concrete, step-by-step roadmap that bridges my CS degree to real production stacks stopped me from wasting months on random tutorials. The best career tool out there.”
+            </p>
+            <div class="lorenzet-test-user">
+                <div class="lorenzet-test-avatar">DM</div>
+                <div>
+                    <div class="lorenzet-test-name">David Miller</div>
+                    <div class="lorenzet-test-role">Junior Systems Engineer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Minimalist Editorial Accordion FAQ ─────────────────────────────────── -->
+<section id="faq" class="lorenzet-faq-section">
+    <div class="text-center mb-5">
+        <div class="bracket-tag">[ FREQUENTLY ASKED QUESTIONS ]</div>
+        <h2 class="lorenzet-section-title">Answers to common inquiries.</h2>
+    </div>
+
+    <div class="lorenzet-faq-item open">
+        <div class="lorenzet-faq-trigger">
+            <div class="lorenzet-faq-question">
+                <span class="lorenzet-faq-index">[ 01 ]</span>
+                <span>Is AI Career Copilot free to use for students?</span>
+            </div>
+            <i class="fas fa-chevron-down lorenzet-faq-chevron"></i>
+        </div>
+        <div class="lorenzet-faq-content">
+            Yes. AI Career Copilot is free for learners, students, and early-career developers. Simply create your account to run resume analyses, take assessments, and generate your learning roadmap.
+        </div>
+    </div>
+
+    <div class="lorenzet-faq-item">
+        <div class="lorenzet-faq-trigger">
+            <div class="lorenzet-faq-question">
+                <span class="lorenzet-faq-index">[ 02 ]</span>
+                <span>How does the ATS scoring engine evaluate my resume?</span>
+            </div>
+            <i class="fas fa-chevron-down lorenzet-faq-chevron"></i>
+        </div>
+        <div class="lorenzet-faq-content">
+            Our parser extracts full text from PDF and DOCX documents and benchmarks your content against canonical industry skill ontologies, measuring keyword density, section organization, action verbs, and quantifiable impact metrics.
+        </div>
+    </div>
+
+    <div class="lorenzet-faq-item">
+        <div class="lorenzet-faq-trigger">
+            <div class="lorenzet-faq-question">
+                <span class="lorenzet-faq-index">[ 03 ]</span>
+                <span>Are mock interview questions unique for each session?</span>
+            </div>
+            <i class="fas fa-chevron-down lorenzet-faq-chevron"></i>
+        </div>
+        <div class="lorenzet-faq-content">
+            Yes. Every mock interview generates custom questions tailored to your chosen target role, seniority level, and previous performance weaknesses so you never face repetitious drills.
+        </div>
+    </div>
+
+    <div class="lorenzet-faq-item">
+        <div class="lorenzet-faq-trigger">
+            <div class="lorenzet-faq-question">
+                <span class="lorenzet-faq-index">[ 04 ]</span>
+                <span>How does the skill evidence architecture work?</span>
+            </div>
+            <i class="fas fa-chevron-down lorenzet-faq-chevron"></i>
+        </div>
+        <div class="lorenzet-faq-content">
+            Rather than relying on self-reported skills, the platform collects verifiable evidence from multiple sources: resume analysis, assessment test scores, and interview performance, unifying them into canonical skill proficiencies.
+        </div>
+    </div>
+</section>
+
+<!-- ─── Signature Marcus Lorenzet Giant Typographic Statement ─────────────── -->
+<section class="lorenzet-big-statement-section">
+    <div class="bracket-tag gold mb-3">[ THE BOTTOM LINE ]</div>
+    <div class="lorenzet-giant-title">
+        SKILLS ARE ATOMIC.<br>
+        <span class="gold">CAREERS ARE NOT.</span>
+    </div>
+    <p class="lorenzet-giant-sub">
+        Crafted with precision for students, engineers, and professionals ready to bridge the gap between preparation and placement.
+    </p>
+    <a href="{% url 'accounts:signup' %}" class="btn-lorenzet-primary">
+        Launch Your Career Copilot <i class="fas fa-arrow-right"></i>
+    </a>
+</section>
+
+<!-- ─── Floating Bottom Dock (Signature Marcus Lorenzet Framer Dock) ────────── -->
+<div class="lorenzet-floating-dock">
+    <a href="#overview" class="lorenzet-dock-link">Overview</a>
+    <a href="#capabilities" class="lorenzet-dock-link">Capabilities</a>
+    <a href="#workflow" class="lorenzet-dock-link">Architecture</a>
+    <a href="#faq" class="lorenzet-dock-link">FAQ</a>
+    <a href="{% url 'accounts:signup' %}" class="lorenzet-dock-cta">Get Started <i class="fas fa-arrow-right"></i></a>
+</div>
+
+<!-- ─── Multi-Column Minimalist Editorial Footer ──────────────────────────── -->
+<footer class="lorenzet-footer">
+    <div class="lorenzet-footer-top">
+        <div>
+            <div class="lorenzet-brand">
+                <div class="lorenzet-brand-logo"><i class="fas fa-terminal"></i></div>
+                <span class="lorenzet-brand-text">AI CAREER COPILOT</span>
+            </div>
+            <p class="lorenzet-footer-brand-desc">
+                An integrated Career Intelligence Platform crafted for companies, institutions, and individuals that care about every detail.
+            </p>
+            <div class="d-inline-flex align-items-center gap-2 mt-2 py-1 px-3 rounded-pill bg-dark border border-secondary border-opacity-25" style="font-family: var(--lorenzet-font-mono); font-size: 11px; color: var(--lorenzet-gold);">
+                <span class="lorenzet-status-dot"></span>
+                <span>SYSTEM OPERATIONAL · ALL MODELS ACTIVE</span>
+            </div>
+        </div>
+
+        <div class="lorenzet-footer-col">
+            <h5>Platform</h5>
+            <ul class="lorenzet-footer-links">
+                <li><a href="{% url 'accounts:landing' %}">Overview</a></li>
+                <li><a href="{% url 'accounts:login' %}">Dashboard</a></li>
+                <li><a href="#workflow">Architecture</a></li>
+                <li><a href="#capabilities">Capabilities</a></li>
+            </ul>
+        </div>
+
+        <div class="lorenzet-footer-col">
+            <h5>AI Modules</h5>
+            <ul class="lorenzet-footer-links">
+                <li><a href="{% url 'resume_analyzer:resume_analyzer' %}">ATS Resume Scoring</a></li>
+                <li><a href="{% url 'interviews:interview_setup' %}">Mock Interviews</a></li>
+                <li><a href="{% url 'roadmaps:roadmap' %}">Phase Roadmaps</a></li>
+                <li><a href="{% url 'assessments:test_setup' %}">Skill Assessments</a></li>
+            </ul>
+        </div>
+
+        <div class="lorenzet-footer-col">
+            <h5>Connect</h5>
+            <ul class="lorenzet-footer-links">
+                <li><a href="mailto:support@careercopilot.ai">Contact Support</a></li>
+                <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
+                <li><a href="{% url 'accounts:signup' %}">Create Account</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="lorenzet-footer-bottom">
+        <span>&copy; 2026 AI Career Copilot. All rights reserved. Pixel by pixel.</span>
+        <a href="#overview" class="lorenzet-back-to-top" id="backToTopBtn">
+            Back to top <i class="fas fa-arrow-up"></i>
+        </a>
+    </div>
 </footer>
 
 {% endblock %}
@@ -158,16 +615,29 @@
 {% block extra_scripts %}
 <script src="{% static 'js/three-scene.js' %}"></script>
 <script>
-    initThreeScene('three-scene-container');
+    // Initialize Three.js ambient scene with low opacity
+    if (typeof initThreeScene === 'function') {
+        initThreeScene('three-scene-container');
+    }
 
-    // FAQ accordion toggle
-    document.querySelectorAll('.faq-question').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var item = this.closest('.faq-item');
+    // FAQ accordion toggle logic
+    document.querySelectorAll('.lorenzet-faq-trigger').forEach(function(trigger) {
+        trigger.addEventListener('click', function() {
+            var item = this.closest('.lorenzet-faq-item');
             var isOpen = item.classList.contains('open');
-            document.querySelectorAll('.faq-item').forEach(function(el) { el.classList.remove('open'); });
-            if (!isOpen) item.classList.add('open');
+            document.querySelectorAll('.lorenzet-faq-item').forEach(function(el) {
+                el.classList.remove('open');
+            });
+            if (!isOpen) {
+                item.classList.add('open');
+            }
         });
+    });
+
+    // Smooth scroll for Back to Top
+    document.getElementById('backToTopBtn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 </script>
 {% endblock %}

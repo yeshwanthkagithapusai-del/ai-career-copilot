@@ -1,410 +1,1221 @@
-/* ===== AI Career Copilot - Landing Page CSS ===== */
-/* Dark-theme overlay: all landing sections are rendered on the dark animated gradient background */
+/* ═════════════════════════════════════════════════════════════════════════════
+   AI CAREER COPILOT — LANDING PAGE
+   Abstracted Design System inspired by Marcus Lorenzet (marcuslorenzet.com)
+   Aesthetic: Warm Dark Luxury Obsidian, Editorial Typography, Amber Gold Accents,
+   Hairline Sand Borders, Bracketed Micro-Tags, Floating Island Navigation.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
-/* ─── CSS Variables Override for Landing Page ─────────────────────────── */
+/* ─── Root Tokens for Landing ─────────────────────────────────────────────── */
 .landing-page {
-    --landing-text: #F0F6FF;
-    --landing-text-muted: rgba(224, 240, 255, 0.75);
-    --landing-card-bg: rgba(15, 23, 50, 0.70);
-    --landing-card-border: rgba(79, 70, 229, 0.35);
-    --landing-card-hover-border: rgba(14, 165, 233, 0.6);
-    --landing-card-glow: 0 8px 40px rgba(14, 165, 233, 0.18);
-    --landing-card-hover-glow: 0 16px 60px rgba(79, 70, 229, 0.30);
-}
-
-/* ─── Base text colours on dark background ───────────────────────────── */
-.landing-page,
-.landing-page h1,
-.landing-page h2,
-.landing-page h3,
-.landing-page h4,
-.landing-page h5,
-.landing-page h6,
-.landing-page p {
-    color: var(--landing-text);
-}
-
-.landing-page .text-secondary-custom {
-    color: var(--landing-text-muted) !important;
-}
-
-/* ─── Navigation ─────────────────────────────────────────────────────── */
-.landing-page nav {
-    background: rgba(8, 12, 28, 0.78) !important;
-    border-bottom: 1px solid rgba(79, 70, 229, 0.25) !important;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-}
-
-.landing-page .sidebar-title {
-    color: #FFFFFF;
-}
-
-/* ─── Hero Section ───────────────────────────────────────────────────── */
-.landing-hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 120px 24px 80px;
+    --lorenzet-bg: #11100D;
+    --lorenzet-surface: #181714;
+    --lorenzet-surface-card: #191815;
+    --lorenzet-surface-elevated: #22201B;
+    --lorenzet-gold: #FCC438;
+    --lorenzet-gold-hover: #FFD25F;
+    --lorenzet-sand: #D0C5AB;
+    --lorenzet-sand-muted: #8E8777;
+    --lorenzet-white: #FAF8F5;
+    --lorenzet-border: rgba(208, 197, 171, 0.14);
+    --lorenzet-border-strong: rgba(208, 197, 171, 0.28);
+    --lorenzet-border-gold: rgba(252, 196, 56, 0.5);
+    --lorenzet-font-display: 'Urbanist', 'Plus Jakarta Sans', sans-serif;
+    --lorenzet-font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --lorenzet-font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    background-color: var(--lorenzet-bg) !important;
+    color: var(--lorenzet-white);
+    font-family: var(--lorenzet-font-body);
+    overflow-x: hidden;
     position: relative;
-    z-index: 3;
 }
 
-.hero-content {
-    max-width: 820px;
-    margin: 0 auto;
+/* Base resets & typography */
+.landing-page * {
+    box-sizing: border-box;
 }
 
-.hero-title {
-    font-size: clamp(2.4rem, 6vw, 4.2rem);
-    font-weight: 900;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    color: #FFFFFF;
-    margin-bottom: 24px;
-    text-shadow: 0 2px 30px rgba(79, 70, 229, 0.3);
+.landing-page a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.25s ease;
 }
 
-.hero-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.22rem);
-    color: rgba(224, 240, 255, 0.82);
-    max-width: 640px;
-    margin: 0 auto 40px;
-    line-height: 1.7;
-    font-weight: 400;
-}
-
-.hero-cta-group {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* Override secondary button for dark background */
-.landing-page .btn-secondary-custom {
-    background: rgba(255, 255, 255, 0.08);
-    color: #FFFFFF;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-}
-
-.landing-page .btn-secondary-custom:hover {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: rgba(14, 165, 233, 0.6);
-    color: #FFFFFF;
-}
-
-/* ─── Section headings on dark bg ────────────────────────────────────── */
-.landing-page section h2 {
-    color: #FFFFFF;
-    text-shadow: 0 0 40px rgba(79, 70, 229, 0.2);
-}
-
-.landing-page section h4 {
-    color: #FFFFFF;
-    font-size: 1.1rem;
-}
-
-.landing-page section p {
-    color: rgba(224, 240, 255, 0.80);
-}
-
-/* ─── Feature Cards ──────────────────────────────────────────────────── */
-.feature-card {
-    background: var(--landing-card-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--landing-card-border);
-    border-radius: 20px;
-    padding: 32px 28px;
-    height: 100%;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    cursor: default;
-}
-
-.feature-card::before {
+/* Ambient glow subtle backgrounds */
+.landing-page::before {
     content: '';
-    position: absolute;
+    position: fixed;
     top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% 12%, rgba(252, 196, 56, 0.04) 0%, transparent 60%),
+        radial-gradient(circle at 10% 45%, rgba(208, 197, 171, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 90% 70%, rgba(252, 196, 56, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ─── Bracketed Micro-Tags (Signature Marcus Lorenzet Component) ───────────── */
+.bracket-tag {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bracket-tag .tag-bracket {
+    color: var(--lorenzet-gold);
+    opacity: 0.85;
+}
+
+.bracket-tag.gold {
+    color: var(--lorenzet-gold);
+}
+
+.bracket-tag.muted {
+    color: var(--lorenzet-sand-muted);
+}
+
+/* ─── Floating Island Top Navigation ──────────────────────────────────────── */
+.lorenzet-nav-wrapper {
+    position: fixed;
+    top: 20px;
     left: 0;
     right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #4F46E5, #0EA5E9, #10B981);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-}
-
-.feature-card:hover {
-    border-color: var(--landing-card-hover-border);
-    box-shadow: var(--landing-card-hover-glow);
-    transform: translateY(-8px);
-    background: rgba(15, 23, 60, 0.85);
-}
-
-.feature-card:hover::before {
-    opacity: 1;
-}
-
-/* Glowing orb behind each card */
-.feature-card::after {
-    content: '';
-    position: absolute;
-    bottom: -40px;
-    right: -40px;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, rgba(79, 70, 229, 0.18), transparent 70%);
-    border-radius: 50%;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
     pointer-events: none;
-    transition: opacity 0.35s;
-    opacity: 0;
 }
 
-.feature-card:hover::after {
-    opacity: 1;
+.lorenzet-nav {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 1140px;
+    background: rgba(17, 16, 13, 0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--lorenzet-border);
+    border-radius: 9999px;
+    padding: 8px 14px 8px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
-.feature-icon {
-    width: 58px;
-    height: 58px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.25), rgba(14, 165, 233, 0.18));
-    border: 1px solid rgba(79, 70, 229, 0.3);
+.lorenzet-nav:hover {
+    border-color: rgba(208, 197, 171, 0.28);
+}
+
+.lorenzet-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lorenzet-brand-logo {
+    width: 32px;
+    height: 32px;
+    background: var(--lorenzet-gold);
+    color: #11100D;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    color: #60A5FA;
-    margin-bottom: 20px;
-    transition: all 0.35s ease;
-}
-
-.feature-card:hover .feature-icon {
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.4), rgba(14, 165, 233, 0.3));
-    color: #93C5FD;
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
-    transform: scale(1.08);
-}
-
-.feature-title {
-    font-size: 1.12rem;
-    font-weight: 700;
-    color: #F0F6FF;
-    margin-bottom: 12px;
-    letter-spacing: -0.01em;
-}
-
-.feature-description {
-    font-size: 0.92rem;
-    color: rgba(200, 220, 255, 0.75);
-    line-height: 1.65;
-    margin: 0;
-}
-
-/* ─── How It Works Section ───────────────────────────────────────────── */
-.landing-page .stat-icon.purple {
-    background: rgba(124, 58, 237, 0.25);
-    color: #A78BFA;
-    border: 1px solid rgba(124, 58, 237, 0.3);
-}
-
-.landing-page .stat-icon.blue {
-    background: rgba(37, 99, 235, 0.25);
-    color: #60A5FA;
-    border: 1px solid rgba(37, 99, 235, 0.3);
-}
-
-.landing-page .stat-icon.cyan {
-    background: rgba(6, 182, 212, 0.25);
-    color: #22D3EE;
-    border: 1px solid rgba(6, 182, 212, 0.3);
-}
-
-/* Step number bubble */
-.landing-page .col-md-4.text-center h4 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #E2EEFF;
-    margin-top: 4px;
-}
-
-.landing-page .col-md-4.text-center p {
-    color: rgba(200, 220, 255, 0.72);
-    font-size: 0.9rem;
-}
-
-/* ─── FAQ Section ────────────────────────────────────────────────────── */
-.faq-item {
-    background: rgba(12, 18, 42, 0.68);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(79, 70, 229, 0.28);
-    border-radius: 14px;
-    margin-bottom: 14px;
-    overflow: hidden;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.faq-item:hover {
-    border-color: rgba(14, 165, 233, 0.45);
-    box-shadow: 0 4px 24px rgba(14, 165, 233, 0.12);
-}
-
-.faq-question {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.97rem;
-    color: #E2EEFF;
-    user-select: none;
-    transition: color 0.2s;
-}
-
-.faq-question:hover {
-    color: #93C5FD;
-}
-
-.faq-question i {
-    color: #60A5FA;
-    font-size: 14px;
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-    margin-left: 12px;
-}
-
-.faq-item.open .faq-question i {
-    transform: rotate(180deg);
-}
-
-.faq-answer {
-    display: none;
-    padding: 0 24px 20px;
-    border-top: 1px solid rgba(79, 70, 229, 0.15);
-}
-
-.faq-answer p {
-    color: rgba(200, 220, 255, 0.80);
-    font-size: 0.91rem;
-    line-height: 1.7;
-    margin: 14px 0 0;
-}
-
-.faq-item.open .faq-answer {
-    display: block;
-}
-
-/* ─── CTA Section ────────────────────────────────────────────────────── */
-.landing-page .glass-card {
-    background: rgba(10, 16, 40, 0.75) !important;
-    border: 1px solid rgba(79, 70, 229, 0.35) !important;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    box-shadow: 0 20px 80px rgba(79, 70, 229, 0.2), 0 0 0 1px rgba(14, 165, 233, 0.1) inset;
-}
-
-.landing-page .glass-card h2 {
-    color: #FFFFFF;
-    font-size: 2rem;
+    font-size: 15px;
     font-weight: 800;
 }
 
-.landing-page .glass-card p {
-    color: rgba(210, 230, 255, 0.82);
+.lorenzet-brand-text {
+    font-family: var(--lorenzet-font-display);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--lorenzet-white);
 }
 
-/* ─── Footer ─────────────────────────────────────────────────────────── */
-.landing-page footer {
-    border-top: 1px solid rgba(79, 70, 229, 0.18) !important;
+.lorenzet-brand-badge {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--lorenzet-gold);
+    background: rgba(252, 196, 56, 0.12);
+    border: 1px solid rgba(252, 196, 56, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
 }
 
-.landing-page footer p {
-    color: rgba(180, 200, 240, 0.55);
-    font-size: 0.88rem;
+.lorenzet-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-/* ─── Chatbot – Bot Message Text Fix ─────────────────────────────────── */
-.landing-page .chat-message.bot,
-.chat-message.bot {
-    background: rgba(30, 40, 80, 0.85) !important;
-    border: 1px solid rgba(79, 70, 229, 0.3) !important;
-    color: #E2EEFF !important;
+.lorenzet-nav-links a {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--lorenzet-sand);
+    text-transform: uppercase;
+    position: relative;
+    padding: 4px 0;
 }
 
-/* Also fix the chatbot panel across all pages */
-.chatbot-panel .chat-message.bot {
-    background: rgba(30, 40, 80, 0.9) !important;
-    color: #E2EEFF !important;
-}
-
-/* ─── Gradient Text Enhancement ──────────────────────────────────────── */
-.landing-page .gradient-text {
-    background: linear-gradient(135deg, #818CF8 0%, #38BDF8 55%, #34D399 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* ─── Decorative Glow Orbs (background atmosphere) ───────────────────── */
-.landing-page::after {
+.lorenzet-nav-links a::after {
     content: '';
-    position: fixed;
-    top: 20%;
-    left: 5%;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(79, 70, 229, 0.07), transparent 65%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0%;
+    height: 1.5px;
+    background: var(--lorenzet-gold);
+    transition: width 0.25s ease;
 }
 
-/* ─── Scroll indicator / section dividers ────────────────────────────── */
-.landing-page section {
+.lorenzet-nav-links a:hover {
+    color: var(--lorenzet-white);
+}
+
+.lorenzet-nav-links a:hover::after {
+    width: 100%;
+}
+
+.lorenzet-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lorenzet-nav-login {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+}
+
+.lorenzet-nav-login:hover {
+    color: var(--lorenzet-white);
+    border-color: var(--lorenzet-border);
+}
+
+.lorenzet-nav-cta {
+    font-family: var(--lorenzet-font-body);
+    font-size: 13px;
+    font-weight: 700;
+    color: #11100D !important;
+    background: var(--lorenzet-gold);
+    padding: 10px 22px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(252, 196, 56, 0.3);
+    transition: all 0.25s ease;
+}
+
+.lorenzet-nav-cta:hover {
+    background: var(--lorenzet-gold-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px rgba(252, 196, 56, 0.45);
+}
+
+/* ─── Hero Section ────────────────────────────────────────────────────────── */
+.lorenzet-hero {
+    min-height: 94vh;
+    padding: 160px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 3;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.lorenzet-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 18px;
+    background: rgba(24, 23, 20, 0.85);
+    border: 1px solid var(--lorenzet-border);
+    border-radius: 9999px;
+    margin-bottom: 32px;
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--lorenzet-sand);
+    text-transform: uppercase;
+    backdrop-filter: blur(16px);
+}
+
+.lorenzet-status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--lorenzet-gold);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--lorenzet-gold);
+    animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.lorenzet-hero-title {
+    font-family: var(--lorenzet-font-display);
+    font-size: clamp(2.8rem, 6.2vw, 5.4rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: var(--lorenzet-white);
+    max-width: 980px;
+    margin: 0 auto 28px;
+}
+
+.lorenzet-hero-title .highlight {
+    color: var(--lorenzet-gold);
+    font-style: italic;
+    font-family: var(--lorenzet-font-display);
+}
+
+.lorenzet-hero-subtitle {
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--lorenzet-sand);
+    line-height: 1.65;
+    max-width: 740px;
+    margin: 0 auto 44px;
+    font-weight: 400;
+}
+
+.lorenzet-hero-cta-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 50px;
+}
+
+.btn-lorenzet-primary {
+    font-family: var(--lorenzet-font-body);
+    font-size: 15px;
+    font-weight: 700;
+    color: #11100D !important;
+    background: var(--lorenzet-gold);
+    padding: 16px 36px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(252, 196, 56, 0.35);
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-lorenzet-primary:hover {
+    background: var(--lorenzet-gold-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(252, 196, 56, 0.55);
+}
+
+.btn-lorenzet-secondary {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lorenzet-white);
+    background: rgba(24, 23, 20, 0.7);
+    border: 1px solid var(--lorenzet-border);
+    padding: 16px 32px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(16px);
+    transition: all 0.28s ease;
+}
+
+.btn-lorenzet-secondary:hover {
+    border-color: var(--lorenzet-gold);
+    color: var(--lorenzet-gold);
+    background: rgba(252, 196, 56, 0.08);
+}
+
+.lorenzet-hero-ticker {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.lorenzet-hero-ticker span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lorenzet-hero-ticker .separator {
+    color: var(--lorenzet-gold);
+    opacity: 0.5;
+}
+
+/* ─── Metric Counter Grid (Marcus Lorenzet Signature Strip) ────────────────── */
+.lorenzet-metrics-section {
+    border-top: 1px solid var(--lorenzet-border);
+    border-bottom: 1px solid var(--lorenzet-border);
+    background: rgba(20, 19, 16, 0.6);
     position: relative;
     z-index: 3;
 }
 
-/* ─── Responsive ─────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .landing-hero {
-        padding: 100px 20px 60px;
-    }
+.lorenzet-metrics-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
 
-    .hero-title {
-        font-size: 2.1rem;
-    }
+.lorenzet-metric-item {
+    padding: 44px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border-right: 1px solid var(--lorenzet-border);
+    transition: background 0.3s ease;
+}
 
-    .hero-subtitle {
-        font-size: 1rem;
-    }
+.lorenzet-metric-item:last-child {
+    border-right: none;
+}
 
-    .hero-cta-group {
-        flex-direction: column;
-        align-items: center;
-    }
+.lorenzet-metric-item:hover {
+    background: rgba(252, 196, 56, 0.03);
+}
 
-    .feature-card {
-        padding: 24px 20px;
-    }
+.lorenzet-metric-num {
+    font-family: var(--lorenzet-font-display);
+    font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--lorenzet-white);
+    line-height: 1;
+    margin-bottom: 12px;
+}
 
-    .faq-question {
-        padding: 16px 18px;
-    }
+.lorenzet-metric-num .gold {
+    color: var(--lorenzet-gold);
+}
 
-    .faq-answer {
-        padding: 0 18px 16px;
+.lorenzet-metric-label {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+    margin-bottom: 4px;
+}
+
+.lorenzet-metric-sub {
+    font-size: 13px;
+    color: var(--lorenzet-sand-muted);
+}
+
+/* ─── Editorial Statement / Philosophy Section ────────────────────────────── */
+.lorenzet-statement-section {
+    padding: 120px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+}
+
+.lorenzet-statement-quote {
+    font-family: var(--lorenzet-font-display);
+    font-size: clamp(1.8rem, 3.8vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+    color: var(--lorenzet-white);
+    margin: 32px 0;
+}
+
+.lorenzet-statement-quote .gold-word {
+    color: var(--lorenzet-gold);
+}
+
+.lorenzet-statement-author {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--lorenzet-sand-muted);
+    text-transform: uppercase;
+}
+
+/* ─── Case Studies / Core Capabilities Showcase ───────────────────────────── */
+.lorenzet-showcase-section {
+    padding: 100px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+}
+
+.lorenzet-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 50px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--lorenzet-border);
+}
+
+.lorenzet-section-title {
+    font-family: var(--lorenzet-font-display);
+    font-size: clamp(2rem, 3.6vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--lorenzet-white);
+    margin-top: 10px;
+}
+
+.lorenzet-showcase-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+}
+
+.lorenzet-case-card {
+    background: var(--lorenzet-surface-card);
+    border: 1px solid var(--lorenzet-border);
+    border-radius: 20px;
+    padding: 44px;
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 48px;
+    align-items: center;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.lorenzet-case-card:hover {
+    border-color: var(--lorenzet-border-gold);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(252, 196, 56, 0.1);
+}
+
+.lorenzet-case-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.lorenzet-case-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.lorenzet-pill-tag {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+    background: rgba(208, 197, 171, 0.08);
+    border: 1px solid rgba(208, 197, 171, 0.18);
+    padding: 4px 10px;
+    border-radius: 9999px;
+}
+
+.lorenzet-case-title {
+    font-family: var(--lorenzet-font-display);
+    font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--lorenzet-white);
+    line-height: 1.2;
+    margin-bottom: 18px;
+}
+
+.lorenzet-case-desc {
+    font-size: 15px;
+    color: var(--lorenzet-sand);
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.lorenzet-case-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 32px;
+}
+
+.lorenzet-bullet {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--lorenzet-white);
+}
+
+.lorenzet-bullet i {
+    color: var(--lorenzet-gold);
+    font-size: 12px;
+}
+
+.lorenzet-case-cta {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lorenzet-gold);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: gap 0.25s ease;
+}
+
+.lorenzet-case-cta:hover {
+    gap: 12px;
+    color: var(--lorenzet-gold-hover);
+}
+
+/* Interactive Mock Preview Box inside case study */
+.lorenzet-mock-preview {
+    background: #141310;
+    border: 1px solid rgba(208, 197, 171, 0.16);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.mock-window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(208, 197, 171, 0.1);
+}
+
+.mock-window-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.mock-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(208, 197, 171, 0.25);
+}
+
+.mock-window-title {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand-muted);
+}
+
+/* Preview 1: ATS Gauge preview */
+.mock-ats-layout {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 20px;
+    align-items: center;
+}
+
+.mock-gauge-circle {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    border: 4px solid rgba(252, 196, 56, 0.2);
+    border-top-color: var(--lorenzet-gold);
+    border-right-color: var(--lorenzet-gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.mock-gauge-val {
+    font-family: var(--lorenzet-font-display);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--lorenzet-white);
+    line-height: 1;
+}
+
+.mock-gauge-lbl {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 9px;
+    color: var(--lorenzet-gold);
+    letter-spacing: 0.1em;
+}
+
+.mock-stat-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mock-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mock-bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-family: var(--lorenzet-font-mono);
+    color: var(--lorenzet-sand);
+}
+
+.mock-bar-track {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mock-bar-fill {
+    height: 100%;
+    background: var(--lorenzet-gold);
+    border-radius: 3px;
+}
+
+/* Preview 2: Interview waveform preview */
+.mock-interview-wave {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 48px;
+    background: rgba(24, 23, 20, 0.7);
+    border-radius: 8px;
+    padding: 0 16px;
+}
+
+.wave-bar {
+    width: 4px;
+    background: var(--lorenzet-gold);
+    border-radius: 2px;
+    animation: waveAnim 1.2s infinite ease-in-out;
+}
+
+.wave-bar:nth-child(2) { animation-delay: 0.15s; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; }
+.wave-bar:nth-child(4) { animation-delay: 0.45s; }
+.wave-bar:nth-child(5) { animation-delay: 0.2s; }
+.wave-bar:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes waveAnim {
+    0%, 100% { height: 8px; }
+    50% { height: 32px; }
+}
+
+/* Preview 3: Roadmap Node Path */
+.mock-roadmap-nodes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding: 10px 0;
+}
+
+.mock-roadmap-line {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: rgba(208, 197, 171, 0.2);
+    z-index: 1;
+}
+
+.mock-node-step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.mock-node-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #191815;
+    border: 2px solid var(--lorenzet-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: var(--lorenzet-font-mono);
+    color: var(--lorenzet-sand);
+}
+
+.mock-node-step.active .mock-node-circle {
+    background: var(--lorenzet-gold);
+    color: #11100D;
+    border-color: var(--lorenzet-gold);
+    font-weight: 700;
+}
+
+.mock-node-step.done .mock-node-circle {
+    border-color: var(--lorenzet-gold);
+    color: var(--lorenzet-gold);
+}
+
+.mock-node-label {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+}
+
+/* ─── The Closed Loop Product Architecture ────────────────────────────────── */
+.lorenzet-loop-section {
+    padding: 100px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+    border-top: 1px solid var(--lorenzet-border);
+}
+
+.lorenzet-loop-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+    margin-top: 44px;
+}
+
+.lorenzet-loop-item {
+    background: var(--lorenzet-surface-card);
+    border: 1px solid var(--lorenzet-border);
+    border-radius: 14px;
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.lorenzet-loop-item:hover {
+    border-color: var(--lorenzet-gold);
+    transform: translateY(-3px);
+}
+
+.lorenzet-loop-step {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    color: var(--lorenzet-gold);
+    margin-bottom: 12px;
+}
+
+.lorenzet-loop-name {
+    font-family: var(--lorenzet-font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--lorenzet-white);
+    margin-bottom: 8px;
+}
+
+.lorenzet-loop-sub {
+    font-size: 12px;
+    color: var(--lorenzet-sand-muted);
+    line-height: 1.5;
+}
+
+/* ─── Editorial Testimonials Section ──────────────────────────────────────── */
+.lorenzet-testimonials-section {
+    padding: 100px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+    border-top: 1px solid var(--lorenzet-border);
+}
+
+.lorenzet-test-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+}
+
+.lorenzet-test-card {
+    background: var(--lorenzet-surface-card);
+    border: 1px solid var(--lorenzet-border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.lorenzet-test-card:hover {
+    border-color: var(--lorenzet-border-strong);
+    transform: translateY(-3px);
+}
+
+.lorenzet-test-quote {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--lorenzet-sand);
+    margin-bottom: 24px;
+    font-style: normal;
+}
+
+.lorenzet-test-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lorenzet-test-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--lorenzet-gold);
+    color: #11100D;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lorenzet-test-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--lorenzet-white);
+}
+
+.lorenzet-test-role {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    color: var(--lorenzet-sand-muted);
+}
+
+/* ─── Minimalist Editorial Accordion FAQ ───────────────────────────────────── */
+.lorenzet-faq-section {
+    padding: 100px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+    border-top: 1px solid var(--lorenzet-border);
+}
+
+.lorenzet-faq-item {
+    border-bottom: 1px solid var(--lorenzet-border);
+    transition: all 0.25s ease;
+}
+
+.lorenzet-faq-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.lorenzet-faq-question {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--lorenzet-font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--lorenzet-white);
+    transition: color 0.2s ease;
+}
+
+.lorenzet-faq-trigger:hover .lorenzet-faq-question {
+    color: var(--lorenzet-gold);
+}
+
+.lorenzet-faq-index {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 12px;
+    color: var(--lorenzet-gold);
+}
+
+.lorenzet-faq-chevron {
+    color: var(--lorenzet-sand);
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.lorenzet-faq-item.open .lorenzet-faq-chevron {
+    transform: rotate(180deg);
+    color: var(--lorenzet-gold);
+}
+
+.lorenzet-faq-content {
+    display: none;
+    padding-bottom: 24px;
+    padding-left: 36px;
+    font-size: 14.5px;
+    color: var(--lorenzet-sand);
+    line-height: 1.7;
+}
+
+.lorenzet-faq-item.open .lorenzet-faq-content {
+    display: block;
+}
+
+/* ─── Signature Marcus Lorenzet Giant Statement Banner ─────────────────────── */
+.lorenzet-big-statement-section {
+    padding: 140px 24px;
+    text-align: center;
+    position: relative;
+    z-index: 3;
+    border-top: 1px solid var(--lorenzet-border);
+    background: radial-gradient(circle at 50% 50%, rgba(252, 196, 56, 0.05) 0%, transparent 60%);
+}
+
+.lorenzet-giant-title {
+    font-family: var(--lorenzet-font-display);
+    font-size: clamp(3.2rem, 8.5vw, 6.8rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--lorenzet-white);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.lorenzet-giant-title .gold {
+    color: var(--lorenzet-gold);
+}
+
+.lorenzet-giant-sub {
+    font-size: 1.2rem;
+    color: var(--lorenzet-sand);
+    max-width: 600px;
+    margin: 0 auto 40px;
+}
+
+/* ─── Floating Bottom Dock (Signature Marcus Lorenzet Framer Dock) ────────── */
+.lorenzet-floating-dock {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 998;
+    background: rgba(17, 16, 13, 0.88);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--lorenzet-border-strong);
+    border-radius: 9999px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(252, 196, 56, 0.1);
+}
+
+.lorenzet-dock-link {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    transition: all 0.2s ease;
+}
+
+.lorenzet-dock-link:hover {
+    color: var(--lorenzet-white);
+    background: rgba(208, 197, 171, 0.12);
+}
+
+.lorenzet-dock-cta {
+    font-family: var(--lorenzet-font-body);
+    font-size: 12px;
+    font-weight: 700;
+    color: #11100D !important;
+    background: var(--lorenzet-gold);
+    padding: 8px 18px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.lorenzet-dock-cta:hover {
+    background: var(--lorenzet-gold-hover);
+    transform: scale(1.03);
+}
+
+/* ─── Multi-Column Minimalist Editorial Footer ────────────────────────────── */
+.lorenzet-footer {
+    padding: 80px 24px 100px;
+    border-top: 1px solid var(--lorenzet-border);
+    position: relative;
+    z-index: 3;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.lorenzet-footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 60px;
+}
+
+.lorenzet-footer-brand-desc {
+    font-size: 14px;
+    color: var(--lorenzet-sand-muted);
+    line-height: 1.7;
+    max-width: 340px;
+    margin-top: 14px;
+}
+
+.lorenzet-footer-col h5 {
+    font-family: var(--lorenzet-font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lorenzet-sand);
+    margin-bottom: 20px;
+}
+
+.lorenzet-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lorenzet-footer-links a {
+    font-size: 13.5px;
+    color: var(--lorenzet-sand-muted);
+}
+
+.lorenzet-footer-links a:hover {
+    color: var(--lorenzet-gold);
+}
+
+.lorenzet-footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 32px;
+    border-top: 1px solid rgba(208, 197, 171, 0.08);
+    font-family: var(--lorenzet-font-mono);
+    font-size: 12px;
+    color: var(--lorenzet-sand-muted);
+}
+
+.lorenzet-back-to-top {
+    color: var(--lorenzet-sand);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lorenzet-back-to-top:hover {
+    color: var(--lorenzet-gold);
+}
+
+/* ─── Responsive Styles ───────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .lorenzet-nav-links {
+        display: none;
+    }
+    .lorenzet-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .lorenzet-metric-item:nth-child(2) {
+        border-right: none;
+    }
+    .lorenzet-case-card {
+        grid-template-columns: 1fr;
+        padding: 32px;
+    }
+    .lorenzet-loop-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .lorenzet-test-grid {
+        grid-template-columns: 1fr;
+    }
+    .lorenzet-footer-top {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
-@media (max-width: 480px) {
-    .hero-title {
-        font-size: 1.8rem;
+@media (max-width: 768px) {
+    .lorenzet-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .lorenzet-metric-item {
+        border-right: none;
+        border-bottom: 1px solid var(--lorenzet-border);
+    }
+    .lorenzet-loop-grid {
+        grid-template-columns: 1fr;
+    }
+    .lorenzet-floating-dock {
+        display: none;
+    }
+    .lorenzet-footer-top {
+        grid-template-columns: 1fr;
+    }
+    .lorenzet-footer-bottom {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
     }
 }

@@ -26,9 +26,21 @@
         {% endif %}
         
         {% if form.errors %}
-            <div class="alert-custom alert-error-custom mb-3">
-                <i class="fas fa-exclamation-circle"></i>
-                Please fix the errors below.
+            <div class="alert-custom alert-error-custom mb-3" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <strong>Please fix the errors below:</strong>
+                </div>
+                <ul class="mb-0 ps-3" style="font-size: 13px; line-height: 1.6; margin-top: 4px;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         {% endif %}
         
@@ -37,14 +49,14 @@
             
             <div class="form-group">
                 <label class="form-label">Full Name *</label>
-                <input type="text" name="full_name" class="form-input input-glow" placeholder="John Doe" required autofocus autocomplete="name" value="{{ form.full_name.value|default:'' }}">
-                {% if form.full_name.errors %}<small class="text-error-custom">{{ form.full_name.errors|join:', ' }}</small>{% endif %}
+                <input type="text" name="full_name" class="form-input input-glow" placeholder="John Doe" required autofocus autocomplete="name" value="{{ form.full_name.value|default:'' }}" {% if form.full_name.errors %}style="border-color: var(--error);"{% endif %}>
+                {% if form.full_name.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.full_name.errors|join:', ' }}</div>{% endif %}
             </div>
             
             <div class="form-group">
                 <label class="form-label">Email *</label>
-                <input type="email" name="email" class="form-input input-glow" placeholder="you@example.com" required autocomplete="email" value="{{ form.email.value|default:'' }}">
-                {% if form.email.errors %}<small class="text-error-custom">{{ form.email.errors|join:', ' }}</small>{% endif %}
+                <input type="email" name="email" class="form-input input-glow" placeholder="you@example.com" required autocomplete="email" value="{{ form.email.value|default:'' }}" {% if form.email.errors %}style="border-color: var(--error);"{% endif %}>
+                {% if form.email.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.email.errors|join:', ' }}</div>{% endif %}
             </div>
             
             <div class="row g-3">
@@ -52,24 +64,25 @@
                     <div class="form-group">
                         <label class="form-label">Password *</label>
                         <div style="position: relative;">
-                            <input type="password" name="password1" id="password1" class="form-input input-glow" placeholder="Min 8 characters" required style="padding-right: 44px;">
+                            <input type="password" name="password1" id="password1" class="form-input input-glow" placeholder="Min 8 characters" required style="padding-right: 44px; {% if form.password1.errors %}border-color: var(--error);{% endif %}">
                             <button type="button" class="password-toggle-btn" onclick="togglePw('password1','pw1-icon')">
                                 <i class="fas fa-eye" id="pw1-icon"></i>
                             </button>
                         </div>
-                        {% if form.password1.errors %}<small class="text-error-custom">{{ form.password1.errors|join:', ' }}</small>{% endif %}
+                        <small class="text-muted-custom d-block mt-1" style="font-size: 11.5px;"><i class="fas fa-info-circle"></i> Min 8 chars, not purely numbers</small>
+                        {% if form.password1.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.password1.errors|join:', ' }}</div>{% endif %}
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Confirm Password *</label>
                         <div style="position: relative;">
-                            <input type="password" name="password2" id="password2" class="form-input input-glow" placeholder="Repeat password" required style="padding-right: 44px;">
+                            <input type="password" name="password2" id="password2" class="form-input input-glow" placeholder="Repeat password" required style="padding-right: 44px; {% if form.password2.errors %}border-color: var(--error);{% endif %}">
                             <button type="button" class="password-toggle-btn" onclick="togglePw('password2','pw2-icon')">
                                 <i class="fas fa-eye" id="pw2-icon"></i>
                             </button>
                         </div>
-                        {% if form.password2.errors %}<small class="text-error-custom">{{ form.password2.errors|join:', ' }}</small>{% endif %}
+                        {% if form.password2.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.password2.errors|join:', ' }}</div>{% endif %}
                     </div>
                 </div>
             </div>
@@ -80,17 +93,19 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">College Name</label>
-                        <input type="text" name="college" class="form-input input-glow" placeholder="Your college" value="{{ form.college.value|default:'' }}">
+                        <input type="text" name="college" class="form-input input-glow" placeholder="Your college" value="{{ form.college.value|default:'' }}" {% if form.college.errors %}style="border-color: var(--error);"{% endif %}>
+                        {% if form.college.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.college.errors|join:', ' }}</div>{% endif %}
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Degree</label>
-                        <select name="degree" class="form-input input-glow">
+                        <select name="degree" class="form-input input-glow" {% if form.degree.errors %}style="border-color: var(--error);"{% endif %}>
                             {% for value, label in form.degree.field.choices %}
                                 <option value="{{ value }}" {% if form.degree.value == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
+                        {% if form.degree.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.degree.errors|join:', ' }}</div>{% endif %}
                     </div>
                 </div>
             </div>
@@ -99,24 +114,27 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Branch</label>
-                        <input type="text" name="branch" class="form-input input-glow" placeholder="e.g., Computer Science" value="{{ form.branch.value|default:'' }}">
+                        <input type="text" name="branch" class="form-input input-glow" placeholder="e.g., Computer Science" value="{{ form.branch.value|default:'' }}" {% if form.branch.errors %}style="border-color: var(--error);"{% endif %}>
+                        {% if form.branch.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.branch.errors|join:', ' }}</div>{% endif %}
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Current Year</label>
-                        <select name="academic_year" class="form-input input-glow">
+                        <select name="academic_year" class="form-input input-glow" {% if form.academic_year.errors %}style="border-color: var(--error);"{% endif %}>
                             {% for value, label in form.academic_year.field.choices %}
                                 <option value="{{ value }}" {% if form.academic_year.value == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
+                        {% if form.academic_year.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.academic_year.errors|join:', ' }}</div>{% endif %}
                     </div>
                 </div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Career Goal</label>
-                <input type="text" name="career_goal" class="form-input input-glow" placeholder="e.g., Data Scientist" value="{{ form.career_goal.value|default:'' }}">
+                <input type="text" name="career_goal" class="form-input input-glow" placeholder="e.g., Data Scientist" value="{{ form.career_goal.value|default:'' }}" {% if form.career_goal.errors %}style="border-color: var(--error);"{% endif %}>
+                {% if form.career_goal.errors %}<div class="text-error-custom mt-1" style="font-size: 12.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-circle"></i> {{ form.career_goal.errors|join:', ' }}</div>{% endif %}
             </div>
             
             <button type="submit" class="btn-primary-custom btn-shine w-100" style="padding: 14px; margin-top: 8px;">

@@ -75,7 +75,7 @@ class CareerContextService:
         if latest_test:
             context['recent_evidence']['assessment'] = {
                 'score': latest_test.score,
-                'topic': latest_test.topic,
+                'topic': getattr(latest_test, 'skill', ''),
                 'date': latest_test.created_at.strftime('%Y-%m-%d')
             }
 
@@ -84,7 +84,7 @@ class CareerContextService:
         if latest_interview:
             context['recent_evidence']['interview'] = {
                 'score': latest_interview.overall_score,
-                'target_role': latest_interview.target_role,
+                'target_role': getattr(latest_interview, 'target_role', ''),
                 'date': latest_interview.created_at.strftime('%Y-%m-%d')
             }
 
@@ -92,13 +92,13 @@ class CareerContextService:
         from projects.models import UserProject
         active_projects = UserProject.objects.filter(user=user, status='in_progress')
         if active_projects.exists():
-            context['active_projects'] = [up.project_template.title for up in active_projects]
+            context['active_projects'] = [getattr(up.project_template, 'title', '') for up in active_projects if up.project_template]
 
         # Roadmap
         roadmap = Roadmap.objects.filter(user=user).first()
         if roadmap:
             context['roadmap_status'] = {
-                'target_role': roadmap.target_role,
+                'target_role': getattr(roadmap, 'target_career', ''),
             }
             
         return context
